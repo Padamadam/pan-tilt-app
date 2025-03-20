@@ -8,7 +8,6 @@ namespace PanTiltApp
     public class MainApp : Form
     {
         private AppConsole console;
-        private IPConnectionHandler? connectionHandler;
 
         public MainApp()
         {
@@ -19,7 +18,7 @@ namespace PanTiltApp
         {
             this.Text = "Pan-Tilt Connection Manager";
             this.WindowState = FormWindowState.Maximized;
-            this.BackColor = ColorTranslator.FromHtml("#145A32"); // Green PCB-like background
+            this.BackColor = ColorTranslator.FromHtml("#06402B"); // Green PCB-like background
 
             // Create console
             console = new AppConsole();

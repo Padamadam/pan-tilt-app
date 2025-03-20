@@ -13,6 +13,10 @@ namespace PanTiltApp
         private Button connectButton = new Button();
         private Button disconnectButton = new Button();
         private Label statusLabel = new Label();
+        private Button sshConnectButton = new Button();
+        private Button sshDisconnectButton = new Button();
+        private RaspberryPiSSHClient? sshClient;
+
         private IPConnectionHandler? connectionHandler;
         private AppConsole console;
 
@@ -24,7 +28,7 @@ namespace PanTiltApp
 
         private void InitializeUI()
         {
-            this.BackColor = ColorTranslator.FromHtml("#145A32"); // Green PCB-like background
+            this.BackColor = ColorTranslator.FromHtml("#06402B"); // Green PCB-like background
             this.Padding = new Padding(10);
 
             // Main Layout (2 Rows: Sections, Console)
@@ -98,16 +102,17 @@ namespace PanTiltApp
         // WiFi Connection Section (With Connect/Disconnect Buttons)
         private TableLayoutPanel CreateWiFiPanel()
         {
-            var wifiPanel = new TableLayoutPanel { Dock = DockStyle.Fill, RowCount = 3 };
-            wifiPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 33));
-            wifiPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 33));
-            wifiPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 33)); // Buttons
+            var wifiPanel = new TableLayoutPanel { Dock = DockStyle.Fill, RowCount = 4 };
+            wifiPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 25));
+            wifiPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 25));
+            wifiPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 25)); // Buttons
+            wifiPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 25)); // Buttons
 
             var ipPanel = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 2 };
             ipPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 120));
             ipPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
             var ipLabel = new Label { Text = "IP:", ForeColor = Color.White, Font = new Font("Courier New", 10), Dock = DockStyle.Fill };
-            ipAddressField = new TextBox { Text = "192.168.1.200", Font = new Font("Courier New", 10), Dock = DockStyle.Fill };
+            ipAddressField = new TextBox { Text = "192.168.0.178", Font = new Font("Courier New", 10), Dock = DockStyle.Fill };
             ipPanel.Controls.Add(ipLabel, 0, 0);
             ipPanel.Controls.Add(ipAddressField, 1, 0);
 
@@ -151,6 +156,39 @@ namespace PanTiltApp
             wifiPanel.Controls.Add(portPanel);
             wifiPanel.Controls.Add(buttonPanel);
 
+            var sshButtonPanel = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 2 };
+            sshButtonPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
+            sshButtonPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
+
+            sshConnectButton = new Button
+            {
+                Text = "SSH Connect",
+                BackColor = Color.Blue,
+                ForeColor = Color.White,
+                Font = new Font("Courier New", 10, FontStyle.Bold),
+                Dock = DockStyle.Fill
+            };
+            sshConnectButton.Click += async (s, e) => await ConnectSSH();
+
+            sshDisconnectButton = new Button
+            {
+                Text = "SSH Disconnect",
+                BackColor = Color.Gray,
+                ForeColor = Color.White,
+                Font = new Font("Courier New", 10, FontStyle.Bold),
+                Dock = DockStyle.Fill,
+                Enabled = false
+            };
+            sshDisconnectButton.Click += (s, e) => DisconnectSSH();
+
+            sshButtonPanel.Controls.Add(sshConnectButton, 0, 0);
+            sshButtonPanel.Controls.Add(sshDisconnectButton, 1, 0);
+
+            // Dodajemy panel SSH poniżej przycisków połączenia IP
+            wifiPanel.Controls.Add(sshButtonPanel);
+
+
+
             return wifiPanel;
         }
 
@@ -193,6 +231,51 @@ namespace PanTiltApp
             connectionHandler?.Close();
             connectButton.Enabled = true;
             disconnectButton.Enabled = false;
+        }
+
+        private async Task ConnectSSH()
+        {
+            string host = ipAddressField.Text; // Pobiera IP z pola tekstowego
+            string username = "pan-tilt"; // Zmień, jeśli używasz innego użytkownika
+            string password = "pan-tilt"; // Podaj właściwe hasło do Raspberry Pi
+
+            sshClient = new RaspberryPiSSHClient(host, username, password);
+            
+            console.PrintMessage("Nawiązywanie połączenia SSH...");
+
+            bool connected = await Task.Run(() => sshClient.Connect());
+
+            if (connected)
+            {
+                console.PrintMessage("Połączono z Raspberry Pi przez SSH.");
+                sshConnectButton.Enabled = false;
+                sshDisconnectButton.Enabled = true;
+                
+                // Przeniesienie uruchomienia serwera do osobnego wątku
+                await Task.Run(() =>
+                {
+                    sshClient.StartServer();
+                });
+
+                console.PrintMessage("Uruchomiono usługę serwera SSH na Raspberry Pi.");
+            }
+            else
+            {
+                console.PrintMessage("Nie udało się połączyć z Raspberry Pi przez SSH.");
+            }
+        }
+
+        private void DisconnectSSH()
+        {
+            if (sshClient != null)
+            {
+                console.PrintMessage("Rozłączanie SSH...");
+                sshClient.Disconnect();
+                console.PrintMessage("Rozłączono z Raspberry Pi.");
+
+                sshConnectButton.Enabled = true;
+                sshDisconnectButton.Enabled = false;
+            }
         }
     }
 }

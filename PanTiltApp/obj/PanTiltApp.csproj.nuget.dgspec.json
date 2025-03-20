@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\arybo\\PlikiAdama\\Studia\\PD\\pan-tilt\\PanTiltApp\\PanTiltApp.csproj": {}
+    "C:\\Users\\arybo\\PlikiAdama\\Studia\\PD\\pan-tilt\\pan-tilt-app\\PanTiltApp\\PanTiltApp.csproj": {}
   },
   "projects": {
-    "C:\\Users\\arybo\\PlikiAdama\\Studia\\PD\\pan-tilt\\PanTiltApp\\PanTiltApp.csproj": {
+    "C:\\Users\\arybo\\PlikiAdama\\Studia\\PD\\pan-tilt\\pan-tilt-app\\PanTiltApp\\PanTiltApp.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\arybo\\PlikiAdama\\Studia\\PD\\pan-tilt\\PanTiltApp\\PanTiltApp.csproj",
+        "projectUniqueName": "C:\\Users\\arybo\\PlikiAdama\\Studia\\PD\\pan-tilt\\pan-tilt-app\\PanTiltApp\\PanTiltApp.csproj",
         "projectName": "PanTiltApp",
-        "projectPath": "C:\\Users\\arybo\\PlikiAdama\\Studia\\PD\\pan-tilt\\PanTiltApp\\PanTiltApp.csproj",
+        "projectPath": "C:\\Users\\arybo\\PlikiAdama\\Studia\\PD\\pan-tilt\\pan-tilt-app\\PanTiltApp\\PanTiltApp.csproj",
         "packagesPath": "C:\\Users\\arybo\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\arybo\\PlikiAdama\\Studia\\PD\\pan-tilt\\PanTiltApp\\obj\\",
+        "outputPath": "C:\\Users\\arybo\\PlikiAdama\\Studia\\PD\\pan-tilt\\pan-tilt-app\\PanTiltApp\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -54,6 +54,10 @@
             "InTheHand.Net.Bluetooth": {
               "target": "Package",
               "version": "[4.1.44, )"
+            },
+            "SSH.NET": {
+              "target": "Package",
+              "version": "[2024.2.0, )"
             }
           },
           "imports": [

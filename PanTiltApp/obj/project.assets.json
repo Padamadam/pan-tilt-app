@@ -2,6 +2,19 @@
   "version": 3,
   "targets": {
     "net9.0-windows7.0": {
+      "BouncyCastle.Cryptography/2.4.0": {
+        "type": "package",
+        "compile": {
+          "lib/net6.0/BouncyCastle.Cryptography.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net6.0/BouncyCastle.Cryptography.dll": {
+            "related": ".xml"
+          }
+        }
+      },
       "InTheHand.Net.Bluetooth/4.1.44": {
         "type": "package",
         "compile": {
@@ -14,10 +27,46 @@
             "related": ".xml"
           }
         }
+      },
+      "SSH.NET/2024.2.0": {
+        "type": "package",
+        "dependencies": {
+          "BouncyCastle.Cryptography": "2.4.0"
+        },
+        "compile": {
+          "lib/net8.0/Renci.SshNet.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/Renci.SshNet.dll": {
+            "related": ".xml"
+          }
+        }
       }
     }
   },
   "libraries": {
+    "BouncyCastle.Cryptography/2.4.0": {
+      "sha512": "SwXsAV3sMvAU/Nn31pbjhWurYSjJ+/giI/0n6tCrYoupEK34iIHCuk3STAd9fx8yudM85KkLSVdn951vTng/vQ==",
+      "type": "package",
+      "path": "bouncycastle.cryptography/2.4.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "LICENSE.md",
+        "README.md",
+        "bouncycastle.cryptography.2.4.0.nupkg.sha512",
+        "bouncycastle.cryptography.nuspec",
+        "lib/net461/BouncyCastle.Cryptography.dll",
+        "lib/net461/BouncyCastle.Cryptography.xml",
+        "lib/net6.0/BouncyCastle.Cryptography.dll",
+        "lib/net6.0/BouncyCastle.Cryptography.xml",
+        "lib/netstandard2.0/BouncyCastle.Cryptography.dll",
+        "lib/netstandard2.0/BouncyCastle.Cryptography.xml",
+        "packageIcon.png"
+      ]
+    },
     "InTheHand.Net.Bluetooth/4.1.44": {
       "sha512": "gRPCmVpYklhn/JkiJpoV2ZExw740csai+o+IgsUn/4igeMOO848uUIXTaN8UDSMGj69T9ZeLYCTYF/dHaJnteg==",
       "type": "package",
@@ -69,11 +118,37 @@
         "lib/xamarinios10/InTheHand.Net.Bluetooth.dll",
         "lib/xamarinios10/InTheHand.Net.Bluetooth.xml"
       ]
+    },
+    "SSH.NET/2024.2.0": {
+      "sha512": "9r+4UF2P51lTztpd+H7SJywk7WgmlWB//Cm2o96c6uGVZU5r58ys2/cD9pCgTk0zCdSkfflWL1WtqQ9I4IVO9Q==",
+      "type": "package",
+      "path": "ssh.net/2024.2.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "README.md",
+        "SS-NET-icon-h500.png",
+        "lib/net462/Renci.SshNet.dll",
+        "lib/net462/Renci.SshNet.xml",
+        "lib/net6.0/Renci.SshNet.dll",
+        "lib/net6.0/Renci.SshNet.xml",
+        "lib/net7.0/Renci.SshNet.dll",
+        "lib/net7.0/Renci.SshNet.xml",
+        "lib/net8.0/Renci.SshNet.dll",
+        "lib/net8.0/Renci.SshNet.xml",
+        "lib/netstandard2.0/Renci.SshNet.dll",
+        "lib/netstandard2.0/Renci.SshNet.xml",
+        "lib/netstandard2.1/Renci.SshNet.dll",
+        "lib/netstandard2.1/Renci.SshNet.xml",
+        "ssh.net.2024.2.0.nupkg.sha512",
+        "ssh.net.nuspec"
+      ]
     }
   },
   "projectFileDependencyGroups": {
     "net9.0-windows7.0": [
-      "InTheHand.Net.Bluetooth >= 4.1.44"
+      "InTheHand.Net.Bluetooth >= 4.1.44",
+      "SSH.NET >= 2024.2.0"
     ]
   },
   "packageFolders": {
@@ -83,11 +158,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\arybo\\PlikiAdama\\Studia\\PD\\pan-tilt\\PanTiltApp\\PanTiltApp.csproj",
+      "projectUniqueName": "C:\\Users\\arybo\\PlikiAdama\\Studia\\PD\\pan-tilt\\pan-tilt-app\\PanTiltApp\\PanTiltApp.csproj",
       "projectName": "PanTiltApp",
-      "projectPath": "C:\\Users\\arybo\\PlikiAdama\\Studia\\PD\\pan-tilt\\PanTiltApp\\PanTiltApp.csproj",
+      "projectPath": "C:\\Users\\arybo\\PlikiAdama\\Studia\\PD\\pan-tilt\\pan-tilt-app\\PanTiltApp\\PanTiltApp.csproj",
       "packagesPath": "C:\\Users\\arybo\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\arybo\\PlikiAdama\\Studia\\PD\\pan-tilt\\PanTiltApp\\obj\\",
+      "outputPath": "C:\\Users\\arybo\\PlikiAdama\\Studia\\PD\\pan-tilt\\pan-tilt-app\\PanTiltApp\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -130,6 +205,10 @@
           "InTheHand.Net.Bluetooth": {
             "target": "Package",
             "version": "[4.1.44, )"
+          },
+          "SSH.NET": {
+            "target": "Package",
+            "version": "[2024.2.0, )"
           }
         },
         "imports": [

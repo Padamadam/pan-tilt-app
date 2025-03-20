@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("PanTiltApp")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+87eae69cd05a7b07506d702bcfb92c8586098379")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+73cf3b85cc0bf063ef538113c003781d60cd6d92")]
 [assembly: System.Reflection.AssemblyProductAttribute("PanTiltApp")]
 [assembly: System.Reflection.AssemblyTitleAttribute("PanTiltApp")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
