@@ -2,6 +2,7 @@ using Renci.SshNet;
 using System;
 using System.Drawing;
 using System.Windows.Forms;
+using PanTiltApp.AppConsole;
 
 namespace PanTiltApp.Network
 {

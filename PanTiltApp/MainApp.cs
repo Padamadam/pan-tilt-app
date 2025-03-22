@@ -2,15 +2,19 @@ using System;
 using System.Drawing;
 using System.Windows.Forms;
 using PanTiltApp.Network;
+using PanTiltApp.AppConsole;
 
 namespace PanTiltApp
 {
     public class MainApp : Form
     {
-        private AppConsole console;
+        private AppConsoleLogic consoleLogic;
+        // private AppConsoleUI consoleUI;
+
 
         public MainApp()
         {
+
             InitializeUI();
         }
 
@@ -19,15 +23,19 @@ namespace PanTiltApp
             this.Text = "Pan-Tilt Connection Manager";
             this.WindowState = FormWindowState.Maximized;
             this.BackColor = ColorTranslator.FromHtml("#06402B"); // Green PCB-like background
+            
+            this.Icon = new Icon("Assets/ikona.ico");
 
-            // Create console
-            console = new AppConsole();
 
-            // Create connection panel
-            ConnectionPanel connectionPanel = new ConnectionPanel(console)
+            var consoleUI = new AppConsoleUI();
+            consoleLogic = new AppConsoleLogic(consoleUI);
+
+
+            // Utwórz panel połączeń
+            ConnectionPanel connectionPanel = new ConnectionPanel(consoleLogic)
             {
                 Dock = DockStyle.Fill,
-                Padding = new Padding(20) // White padding
+                Padding = new Padding(20)
             };
 
             // Add elements to layout
@@ -42,10 +50,11 @@ namespace PanTiltApp
             mainLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 50));
             mainLayout.Padding = new Padding(20); // White padding
 
-            // Wrap console inside a Panel to ensure it fully expands
             var consolePanel = new Panel { Dock = DockStyle.Fill, BackColor = Color.Black };
-            console.Dock = DockStyle.Fill;
-            consolePanel.Controls.Add(console);
+            // consoleUI.Dock = DockStyle.Fill;
+            // consolePanel.Controls.Add(consoleUI);
+            consoleLogic.UI.Dock = DockStyle.Fill;
+            consolePanel.Controls.Add(consoleLogic.UI); 
 
             mainLayout.Controls.Add(connectionPanel, 0, 0);
             mainLayout.Controls.Add(consolePanel, 0, 1);
