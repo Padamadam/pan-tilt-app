@@ -40,6 +40,7 @@ namespace PanTiltApp
             mainLayout.RowStyles.Clear();
             mainLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 50));
             mainLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 50));
+            mainLayout.Padding = new Padding(20); // White padding
 
             // Wrap console inside a Panel to ensure it fully expands
             var consolePanel = new Panel { Dock = DockStyle.Fill, BackColor = Color.Black };

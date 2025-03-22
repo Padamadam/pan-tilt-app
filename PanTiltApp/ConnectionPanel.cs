@@ -36,10 +36,15 @@ namespace PanTiltApp
             {
                 Dock = DockStyle.Fill,
                 ColumnCount = 1,
-                RowCount = 1,
+                RowCount = 3,
             };
 
-            mainLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100)); // Sections
+            mainLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));  // Sekcje
+            mainLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 150)); // Konsola (wysokość jak wcześniej)
+            mainLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 20));  // MARGINES DOLNY
+
+
+            // mainLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100)); // Sections
 
             // Sections Panel (Stacked WiFi/Bluetooth + Camera + Stacked Turret)
             var sectionsPanel = new TableLayoutPanel
@@ -80,7 +85,10 @@ namespace PanTiltApp
 
             // Console Panel
             var consolePanel = new TableLayoutPanel { Dock = DockStyle.Fill };
+            // consolePanel.Controls.Add(console);
+            console.Margin = new Padding(0, 0, 0, 20); // ⬅️ dolny margines 20px
             consolePanel.Controls.Add(console);
+
             mainLayout.Controls.Add(consolePanel, 0, 1);
 
             this.Controls.Add(mainLayout);
