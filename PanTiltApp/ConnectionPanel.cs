@@ -61,13 +61,13 @@ namespace PanTiltApp
             sectionsPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 20)); // Turret Control & Orientation
 
             // Row Proportions
-            sectionsPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 20)); // WiFi Label / Turret Control Label
-            sectionsPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 30)); // WiFi Functionality / Turret Control Functionality
-            sectionsPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 20)); // Bluetooth Label / Turret Orientation Label
+            sectionsPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 10)); // WiFi Label / Turret Control Label
+            sectionsPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 50)); // WiFi Functionality / Turret Control Functionality
+            sectionsPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 10)); // Bluetooth Label / Turret Orientation Label
             sectionsPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 30)); // Bluetooth Functionality / Turret Orientation Functionality
 
             // First Column (WiFi & Bluetooth Stacked)
-            wifiUI = new WiFiConnectionUI();
+            // wifiUI = new WiFiConnectionUI();
             wifiLogic = new WiFiConnection(console);
 
             sectionsPanel.Controls.Add(CreateSectionLabel("WiFi Connection"), 0, 0);

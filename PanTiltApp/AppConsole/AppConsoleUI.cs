@@ -108,10 +108,20 @@ namespace PanTiltApp.AppConsole
                 MessageDisplay.SelectionStart = MessageDisplay.Text.Length;
                 MessageDisplay.SelectionLength = 0;
                 MessageDisplay.SelectionColor = color;
-                MessageDisplay.AppendText($"{message}{Environment.NewLine}");
+                MessageDisplay.AppendText($"{message}{Environment.NewLine} \u200B{Environment.NewLine}");
                 MessageDisplay.SelectionColor = MessageDisplay.ForeColor;
+                MessageDisplay.SelectionStart = MessageDisplay.Text.Length;
                 MessageDisplay.ScrollToCaret();
+
             });
         }
+
+        public void ScrollToBottom()
+        {
+            MessageDisplay.SelectionStart = MessageDisplay.Text.Length;
+            MessageDisplay.ScrollToCaret();
+        }
+
+
     }
 }

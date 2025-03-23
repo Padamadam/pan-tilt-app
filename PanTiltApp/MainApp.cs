@@ -16,6 +16,21 @@ namespace PanTiltApp
         {
 
             InitializeUI();
+            // Automatyczne połączenie z RPi po uruchomieniu aplikacji
+            Task.Run(() =>
+            {
+                var sshClient = new RaspberryPiSSHClient("192.168.1.100", "pi", "twoje_haslo"); // <-- Dostosuj dane
+                bool connected = sshClient.Connect();
+
+                if (connected)
+                {
+                    sshClient.StartServer();
+                }
+                else
+                {
+                    consoleLogic?.PrintMessage("Nie udało się połączyć z Raspberry Pi przez SSH.");
+                }
+            });
         }
 
         private void InitializeUI()

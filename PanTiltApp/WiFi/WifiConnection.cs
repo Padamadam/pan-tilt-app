@@ -14,11 +14,14 @@ namespace PanTiltApp.WiFi
         private RaspberryPiSSHClient? sshClient;
         
         public Control UI => ui.Panel; // dostęp do kontrolki
-        
+        private const string ConfigFilePath = "config.ini";
+
+
         public WiFiConnection(AppConsoleLogic console)
         {
             this.console = console;
             this.ui = new WiFiConnectionUI();
+            this.ui.LoadConfig();
             WireEvents();
         }
 
@@ -26,7 +29,6 @@ namespace PanTiltApp.WiFi
         private void WireEvents()
         {
             ui.ConnectButton.Click += async (s, e) => await Connect();
-            MessageBox.Show("Startuję aplikację");
             ui.DisconnectButton.Click += (s, e) => Disconnect();
 
             ui.SSHConnectButton.Click += async (s, e) => await ConnectSSH();
@@ -35,16 +37,21 @@ namespace PanTiltApp.WiFi
 
         private async Task Connect()
         {
+            SaveConfig();
+            console.PrintMessage("Łączenie przez IP...");
+
             string ip = ui.IpAddressField.Text;
             int port = int.Parse(ui.PortNumberField.Text);
 
             connectionHandler = new IPConnectionHandler(ip, port);
             connectionHandler.ConsolePrint += console.PrintMessage;
+            
+            ui.DisconnectButton.Enabled = true;
+            // ui.SetConnectedState();
 
             if (await connectionHandler.ConnectAsync())
             {
                 ui.ConnectButton.Enabled = false;
-                ui.DisconnectButton.Enabled = true;
                 console.PrintMessage("Połączono przez IP.");
             }
             else
@@ -58,6 +65,7 @@ namespace PanTiltApp.WiFi
             connectionHandler?.Close();
             ui.ConnectButton.Enabled = true;
             ui.DisconnectButton.Enabled = false;
+            // ui.SetDisconnectedState();
             console.PrintMessage("Rozłączono.");
         }
 
@@ -103,5 +111,23 @@ namespace PanTiltApp.WiFi
                 ui.SSHDisconnectButton.Enabled = false;
             }
         }
+        private void SaveConfig()
+        {
+            try
+            {
+                File.WriteAllLines(ConfigFilePath, new[]
+                {
+                    "[Network]",
+                    $"ip_address = {ui.IpAddressField.Text}",
+                    $"port = {ui.PortNumberField.Text}"
+                });
+                console.PrintMessage($"IP = {ui.IpAddressField.Text}");
+            }
+            catch (Exception ex)
+            {
+                console.PrintMessage($"Błąd zapisu do config.ini: {ex.Message}");
+            }
+        }
+
     }
 }

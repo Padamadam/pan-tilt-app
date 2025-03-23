@@ -35,6 +35,8 @@ namespace PanTiltApp.AppConsole
 
         private string ExecuteCommand(string command)
         {
+            ui.ScrollToBottom();
+            
             switch (command.ToLower())
             {
                 case "help":
