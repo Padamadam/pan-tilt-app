@@ -105,6 +105,22 @@ namespace PanTiltApp.AppConsole
             }
         }
 
+        public void HandleGlobalKeyPress(char keyChar)
+        {
+            // Jeśli InputBox już ma fokus, nie rób nic – system sam doda znak
+            if (ui.InputBox.Focused)
+                return;
 
+            ui.InputBox.Focus();
+
+            // Przenieś kursor za prompt jeśli trzeba
+            if (ui.InputBox.SelectionStart < 2)
+                ui.InputBox.SelectionStart = 2;
+
+            // Ręcznie dodaj znak (bo InputBox wcześniej nie miał fokusu)
+            int pos = ui.InputBox.SelectionStart;
+            ui.InputBox.Text = ui.InputBox.Text.Insert(pos, keyChar.ToString());
+            ui.InputBox.SelectionStart = pos + 1;
+        }
     }
 }

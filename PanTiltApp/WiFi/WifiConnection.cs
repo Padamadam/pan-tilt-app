@@ -15,6 +15,7 @@ namespace PanTiltApp.WiFi
         
         public Control UI => ui.Panel; // dostęp do kontrolki
         private const string ConfigFilePath = "config.ini";
+        public WiFiConnectionUI UIInternal => ui;
 
 
         public WiFiConnection(AppConsoleLogic console)
@@ -130,6 +131,6 @@ namespace PanTiltApp.WiFi
                 console.PrintMessage($"Błąd zapisu do config.ini: {ex.Message}");
             }
         }
-
+        
     }
 }

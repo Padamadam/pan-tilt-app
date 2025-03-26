@@ -17,11 +17,12 @@ namespace PanTiltApp
         private readonly AppConsoleUI consoleUI;
         private BluetoothConnectionUI? bluetoothUI;
         private BluetoothConnection? bluetoothLogic;
-        private WiFiConnectionUI? wifiUI;
         private WiFiConnection? wifiLogic;
         private RaspberryPiSSHClient? sshClient;
         private IPConnectionHandler? connectionHandler;
         // private AppConsole? console;
+        public WiFiConnectionUI? WiFiUI => wifiLogic?.UIInternal;
+
 
         public ConnectionPanel(AppConsoleLogic appConsole)
         {

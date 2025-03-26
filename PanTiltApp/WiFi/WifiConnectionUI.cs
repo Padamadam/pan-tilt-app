@@ -134,5 +134,10 @@ namespace PanTiltApp.WiFi
             ConnectButton.BackColor = Color.Green;
             DisconnectButton.BackColor = Color.Red;
         }
+
+        public bool IsAnyInputFieldFocused()
+        {
+            return IpAddressField.Focused || PortNumberField.Focused;
+        }
     }
 }

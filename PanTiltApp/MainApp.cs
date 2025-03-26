@@ -10,6 +10,8 @@ namespace PanTiltApp
     {
         private AppConsoleLogic consoleLogic;
         // private AppConsoleUI consoleUI;
+        private ConnectionPanel connectionPanel;
+
 
 
         public MainApp()
@@ -17,20 +19,32 @@ namespace PanTiltApp
 
             InitializeUI();
             // Automatyczne połączenie z RPi po uruchomieniu aplikacji
-            Task.Run(() =>
-            {
-                var sshClient = new RaspberryPiSSHClient("192.168.1.100", "pi", "twoje_haslo"); // <-- Dostosuj dane
-                bool connected = sshClient.Connect();
+            // Task.Run(() =>
+            // {
+            //     var sshClient = new RaspberryPiSSHClient("192.168.1.100", "pi", "twoje_haslo"); // <-- Dostosuj dane
+            //     bool connected = sshClient.Connect();
 
-                if (connected)
+            //     if (connected)
+            //     {
+            //         sshClient.StartServer();
+            //     }
+            //     else
+            //     {
+            //         consoleLogic?.PrintMessage("Nie udało się połączyć z Raspberry Pi przez SSH.");
+            //     }
+            // });
+
+            this.KeyPreview = true;
+            this.KeyPress += (sender, e) =>
+            {
+                var wifiUI = connectionPanel.WiFiUI;
+                if (!char.IsControl(e.KeyChar) &&
+                    !(wifiUI?.IpAddressField.Focused ?? false) &&
+                    !(wifiUI?.PortNumberField.Focused ?? false))
                 {
-                    sshClient.StartServer();
+                    consoleLogic?.HandleGlobalKeyPress(e.KeyChar);
                 }
-                else
-                {
-                    consoleLogic?.PrintMessage("Nie udało się połączyć z Raspberry Pi przez SSH.");
-                }
-            });
+            };
         }
 
         private void InitializeUI()
@@ -47,7 +61,7 @@ namespace PanTiltApp
 
 
             // Utwórz panel połączeń
-            ConnectionPanel connectionPanel = new ConnectionPanel(consoleLogic)
+            connectionPanel = new ConnectionPanel(consoleLogic)
             {
                 Dock = DockStyle.Fill,
                 Padding = new Padding(20)
