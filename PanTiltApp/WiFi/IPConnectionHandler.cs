@@ -90,5 +90,21 @@ namespace PanTiltApp.Network
                 _networkStream = null;
             }
         }
+        public string Send(string command)
+        {
+            if (!IsConnected || _networkStream == null)
+                return "Brak połączenia z serwerem.";
+
+            try
+            {
+                byte[] data = Encoding.UTF8.GetBytes(command);
+                _networkStream.Write(data, 0, data.Length);
+                return $"Wysłano: {command}";
+            }
+            catch (Exception ex)
+            {
+                return $"Błąd wysyłania komendy: {ex.Message}";
+            }
+        }
     }
 }

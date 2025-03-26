@@ -122,6 +122,10 @@ namespace PanTiltApp.AppConsole
             MessageDisplay.ScrollToCaret();
         }
 
-
+        public void SetInputFieldText(string text)
+        {
+            InputBox.Text = text;
+            InputBox.SelectionStart = text.Length;
+        }
     }
 }

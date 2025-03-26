@@ -53,6 +53,8 @@ namespace PanTiltApp.WiFi
             {
                 ui.ConnectButton.Enabled = false;
                 console.PrintMessage("Połączono przez IP.");
+                console.SetConnectionHandler(connectionHandler);
+
             }
             else
             {
