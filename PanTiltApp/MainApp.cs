@@ -10,7 +10,7 @@ namespace PanTiltApp
     {
         private AppConsoleLogic consoleLogic;
         // private AppConsoleUI consoleUI;
-        private ConnectionPanel connectionPanel;
+        private MainPanel mainPanel;
 
 
 
@@ -37,7 +37,7 @@ namespace PanTiltApp
             this.KeyPreview = true;
             this.KeyPress += (sender, e) =>
             {
-                var wifiUI = connectionPanel.WiFiUI;
+                var wifiUI = mainPanel.WiFiUI;
                 if (!char.IsControl(e.KeyChar) &&
                     !(wifiUI?.IpAddressField.Focused ?? false) &&
                     !(wifiUI?.PortNumberField.Focused ?? false))
@@ -61,7 +61,7 @@ namespace PanTiltApp
 
 
             // Utwórz panel połączeń
-            connectionPanel = new ConnectionPanel(consoleLogic)
+            mainPanel = new MainPanel(consoleLogic)
             {
                 Dock = DockStyle.Fill,
                 Padding = new Padding(20)
@@ -85,7 +85,7 @@ namespace PanTiltApp
             consoleLogic.UI.Dock = DockStyle.Fill;
             consolePanel.Controls.Add(consoleLogic.UI); 
 
-            mainLayout.Controls.Add(connectionPanel, 0, 0);
+            mainLayout.Controls.Add(mainPanel, 0, 0);
             mainLayout.Controls.Add(consolePanel, 0, 1);
 
             this.Controls.Add(mainLayout);
