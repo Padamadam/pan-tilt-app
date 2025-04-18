@@ -81,7 +81,7 @@ namespace PanTiltApp.Network
         /// </summary>
         public void StartServer()
         {
-            string command = "python3 /home/pan-tilt/Documents/apka/server.py";
+            string command = "sudo python3 /home/pan-tilt/Documents/apka/server.py";
             Console.WriteLine("Uruchamiam serwer na Raspberry Pi...");
             string result = ExecuteCommand(command);
             Console.WriteLine(result);

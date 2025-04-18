@@ -87,10 +87,7 @@ namespace PanTiltApp.Operate
                 (joystickBase.Width - size) / 2,
                 (joystickBase.Height - size) / 2,
                 size,
-                size);
-
-
-            
+                size);            
 
             // Rysuj uchwyt joysticka (wewnętrzne kółko)
             g.FillEllipse(Brushes.DarkGray,

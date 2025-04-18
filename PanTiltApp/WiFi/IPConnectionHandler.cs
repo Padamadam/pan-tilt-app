@@ -90,20 +90,18 @@ namespace PanTiltApp.Network
                 _networkStream = null;
             }
         }
-        public string Send(string command)
+        public string Send(byte[] data)
         {
             if (!IsConnected || _networkStream == null)
                 return "Brak połączenia z serwerem.";
-
             try
             {
-                byte[] data = Encoding.UTF8.GetBytes(command);
                 _networkStream.Write(data, 0, data.Length);
-                return $"Wysłano: {command}";
+                return $"Wysłano ramkę binarną: {BitConverter.ToString(data)}";
             }
             catch (Exception ex)
             {
-                return $"Błąd wysyłania komendy: {ex.Message}";
+                return $"Błąd wysyłania ramki binarnej: {ex.Message}";
             }
         }
     }
