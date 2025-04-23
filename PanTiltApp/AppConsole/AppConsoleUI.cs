@@ -90,7 +90,7 @@ namespace PanTiltApp.AppConsole
             // MessageDisplay.MouseDown += (s, e) => InputBox.Focus();
             InputBox.GotFocus += InputBox_GotFocus;
             InputBox.MouseUp += InputBox_MouseUp;
-            // InputBox.KeyPress += InputBox_KeyPress;
+            InputBox.KeyPress += InputBox_KeyPress;
             InputBox.TextChanged += InputBox_TextChanged;
 
 
@@ -127,6 +127,7 @@ namespace PanTiltApp.AppConsole
                 if (InputBox.SelectionStart <= PromptLength)
                 {
                     e.Handled = true; // Blokuj usuwanie prompta
+                    e.SuppressKeyPress = true;
                 }
             }
             else if (e.KeyCode == Keys.Left)
@@ -134,6 +135,7 @@ namespace PanTiltApp.AppConsole
                 if (InputBox.SelectionStart <= PromptLength)
                 {
                     e.Handled = true; // Blokuj przesuwanie kursora przed prompt
+                    e.SuppressKeyPress = true;
                 }
             }
         }
@@ -142,14 +144,31 @@ namespace PanTiltApp.AppConsole
         {
             MessageDisplay.Invoke((MethodInvoker)delegate
             {
+                // Tymczasowo pozwalamy na edycję
+                MessageDisplay.ReadOnly = false;
+
+                // Jeśli końcówka to pusty wiersz – usuń go bez utraty formatowania
+                if (MessageDisplay.Text.EndsWith("\n"))
+                {
+                    int lastIndex = MessageDisplay.Text.LastIndexOf('\n');
+                    if (lastIndex == MessageDisplay.Text.Length - 1 && lastIndex > 0)
+                    {
+                        MessageDisplay.Select(lastIndex, 1);
+                        MessageDisplay.SelectedText = "";
+                    }
+                }
+
                 MessageDisplay.SelectionStart = MessageDisplay.Text.Length;
                 MessageDisplay.SelectionLength = 0;
                 MessageDisplay.SelectionColor = color;
-                MessageDisplay.AppendText($"{message}{Environment.NewLine} \u200B{Environment.NewLine}");
+                MessageDisplay.AppendText($"{message} \n");
+                MessageDisplay.AppendText("\n");
                 MessageDisplay.SelectionColor = MessageDisplay.ForeColor;
                 MessageDisplay.SelectionStart = MessageDisplay.Text.Length;
                 MessageDisplay.ScrollToCaret();
 
+                // Zablokuj edycję z powrotem
+                MessageDisplay.ReadOnly = true;
             });
         }
 
@@ -187,15 +206,15 @@ namespace PanTiltApp.AppConsole
             }
         }
 
-        // private void InputBox_KeyPress(object? sender, KeyPressEventArgs e)
-        // {
-        //     // Jeśli kursor wejdzie przed prompt – blokuj pisanie
-        //     if (InputBox.SelectionStart < PromptLength)
-        //     {
-        //         e.Handled = true;
-        //         InputBox.SelectionStart = PromptLength;
-        //     }
-        // }
+        private void InputBox_KeyPress(object? sender, KeyPressEventArgs e)
+        {
+            // Jeśli kursor wejdzie przed prompt – blokuj pisanie
+            if (InputBox.SelectionStart < PromptLength)
+            {
+                e.Handled = true;
+                InputBox.SelectionStart = PromptLength;
+            }
+        }
 
         private int CountPromptOccurrences(string input)
         {

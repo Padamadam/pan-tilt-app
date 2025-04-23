@@ -12,6 +12,8 @@ namespace PanTiltApp.Network
         private string username;
         private string password;
         private SshClient client;
+        public bool IsConnected => client.IsConnected;
+        public event Action<string, string>? ConsolePrint;
 
         public RaspberryPiSSHClient(string host, string username, string password)
         {
@@ -21,6 +23,7 @@ namespace PanTiltApp.Network
             client = new SshClient(host, username, password);
         }
 
+
         /// <summary>
         /// Łączy się z Raspberry Pi przez SSH
         /// </summary>
@@ -29,12 +32,12 @@ namespace PanTiltApp.Network
             try
             {
                 client.Connect();
-                Console.WriteLine("Połączono z Raspberry Pi!");
+                ConsolePrint?.Invoke("Połączono z Raspberry Pi!", "green");
                 return true;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Błąd połączenia: {ex.Message}");
+                ConsolePrint?.Invoke($"Błąd połączenia: {ex.Message}", "red");
                 return false;
             }
         }
@@ -42,25 +45,20 @@ namespace PanTiltApp.Network
         /// <summary>
         /// Wykonuje podaną komendę na Raspberry Pi
         /// </summary>
-        public string ExecuteCommand(string command)
+        public void ExecuteCommand(string command)
         {
             if (!client.IsConnected)
-            {
-                Console.WriteLine("Brak połączenia. Połącz się najpierw.");
-                return "Błąd: brak połączenia.";
-            }
+                return;           
 
             try
             {
                 var cmd = client.CreateCommand(command);
                 string output = cmd.Execute();
-                Console.WriteLine($"Wynik komendy: {output}");
-                return output;
+                return;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Błąd podczas wykonywania komendy: {ex.Message}");
-                return $"Błąd: {ex.Message}";
+                ConsolePrint?.Invoke($"Błąd podczas wykonywania komendy: {ex.Message}", "red");
             }
         }
 
@@ -72,7 +70,6 @@ namespace PanTiltApp.Network
             if (client.IsConnected)
             {
                 client.Disconnect();
-                Console.WriteLine("Rozłączono z Raspberry Pi.");
             }
         }
 
@@ -82,9 +79,7 @@ namespace PanTiltApp.Network
         public void StartServer()
         {
             string command = "sudo python3 /home/pan-tilt/Documents/apka/server.py";
-            Console.WriteLine("Uruchamiam serwer na Raspberry Pi...");
-            string result = ExecuteCommand(command);
-            Console.WriteLine(result);
+            ExecuteCommand(command);
         }
     }
 }

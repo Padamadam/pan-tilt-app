@@ -8,41 +8,30 @@ namespace PanTiltApp
 {
     public class MainApp : Form
     {
-        private AppConsoleLogic consoleLogic;
-        // private AppConsoleUI consoleUI;
-        private MainPanel mainPanel;
-
-
-
+        private TabControl tabControl;
+        private BasicControlsTab basicmainPanel;
+        private AdvancedControlsTab advancedmainPanel;
         public MainApp()
         {
-
             InitializeUI();
-            // Automatyczne połączenie z RPi po uruchomieniu aplikacji
-            // Task.Run(() =>
-            // {
-            //     var sshClient = new RaspberryPiSSHClient("192.168.1.100", "pi", "twoje_haslo"); // <-- Dostosuj dane
-            //     bool connected = sshClient.Connect();
-
-            //     if (connected)
-            //     {
-            //         sshClient.StartServer();
-            //     }
-            //     else
-            //     {
-            //         consoleLogic?.PrintMessage("Nie udało się połączyć z Raspberry Pi przez SSH.");
-            //     }
-            // });
-
             this.KeyPreview = true;
             this.KeyPress += (sender, e) =>
             {
-                var wifiUI = mainPanel.WiFiUI;
+                var wifiUI = basicmainPanel.mainPanel?.WiFiUI;
+                var inputBox = basicmainPanel.consoleLogic?.UI.InputBox;
+                
                 if (!char.IsControl(e.KeyChar) &&
                     !(wifiUI?.IpAddressField.Focused ?? false) &&
                     !(wifiUI?.PortNumberField.Focused ?? false))
                 {
-                    consoleLogic?.HandleGlobalKeyPress(e.KeyChar);
+                    bool inputFocused = inputBox?.Focused ?? false;
+
+                    basicmainPanel.consoleLogic?.HandleGlobalKeyPress(e.KeyChar);
+                    if (!inputFocused)
+                    {
+                        // jeśli InputBox NIE był sfokusowany – dodaliśmy znak ręcznie → zablokuj beep
+                        e.Handled = true;
+                    }
                 }
             };
         }
@@ -55,40 +44,49 @@ namespace PanTiltApp
             
             this.Icon = new Icon("Assets/ikona.ico");
 
-
-            var consoleUI = new AppConsoleUI();
-            consoleLogic = new AppConsoleLogic(consoleUI);
-
-
-            // Utwórz panel połączeń
-            mainPanel = new MainPanel(consoleLogic)
+            // Initialize TabControl
+            tabControl = new TabControl
             {
                 Dock = DockStyle.Fill,
-                Padding = new Padding(20)
+                Font = new Font("Courier New", 10, FontStyle.Regular),
+                TabIndex = 0
             };
 
-            // Add elements to layout
-            var mainLayout = new TableLayoutPanel
+            tabControl.DrawMode = TabDrawMode.OwnerDrawFixed;
+            tabControl.DrawItem += TabControl_DrawItem;
+
+            basicmainPanel = new BasicControlsTab();
+            advancedmainPanel = new AdvancedControlsTab();
+
+            tabControl.TabPages.Add(basicmainPanel);
+            tabControl.TabPages.Add(advancedmainPanel);
+
+            this.Controls.Add(tabControl);
+        }
+
+        private void TabControl_DrawItem(object? sender, DrawItemEventArgs e)
+        {
+            var tabControl = sender as TabControl;
+            var tabPage = tabControl?.TabPages[e.Index];
+
+            bool isSelected = (e.State & DrawItemState.Selected) == DrawItemState.Selected;
+            Color backgroundColor = isSelected
+                ? ColorTranslator.FromHtml("#003300") // aktywna zakładka
+                : ColorTranslator.FromHtml("#006600"); // nieaktywna zakładka
+
+            using (var brush = new SolidBrush(backgroundColor))
             {
-                Dock = DockStyle.Fill,
-                RowCount = 2
-            };
+                e.Graphics.FillRectangle(brush, e.Bounds);
+            }
 
-            mainLayout.RowStyles.Clear();
-            mainLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 50));
-            mainLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 50));
-            mainLayout.Padding = new Padding(20); // White padding
-
-            var consolePanel = new Panel { Dock = DockStyle.Fill, BackColor = Color.Black };
-            // consoleUI.Dock = DockStyle.Fill;
-            // consolePanel.Controls.Add(consoleUI);
-            consoleLogic.UI.Dock = DockStyle.Fill;
-            consolePanel.Controls.Add(consoleLogic.UI); 
-
-            mainLayout.Controls.Add(mainPanel, 0, 0);
-            mainLayout.Controls.Add(consolePanel, 0, 1);
-
-            this.Controls.Add(mainLayout);
+            TextRenderer.DrawText(
+                e.Graphics,
+                tabPage?.Text,
+                tabControl?.Font ?? SystemFonts.DefaultFont,
+                e.Bounds,
+                Color.White,
+                TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter
+            );
         }
     }
 }

@@ -47,20 +47,52 @@ namespace PanTiltApp.Network
         {
             try
             {
-                byte[] buffer = new byte[1024];
+                List<byte> buffer = new();
+                byte[] readBuffer = new byte[1024];
 
                 while (_isReceiving && _networkStream != null)
                 {
-                    int bytesRead = await _networkStream.ReadAsync(buffer, 0, buffer.Length);
-
-                    if (bytesRead > 0)
-                    {
-                        string receivedData = Encoding.ASCII.GetString(buffer, 0, bytesRead);
-                        ConsolePrint?.Invoke($"Received: {receivedData}", "yellow");
-                    }
-                    else
+                    int bytesRead = await _networkStream.ReadAsync(readBuffer, 0, readBuffer.Length);
+                    if (bytesRead <= 0)
                     {
                         Close();
+                        return;
+                    }
+
+                    for (int i = 0; i < bytesRead; i++)
+                        buffer.Add(readBuffer[i]);
+
+                    while (buffer.Count >= 8)
+                    {
+                        // Sprawdź, czy mamy potencjalną ramkę binarną
+                        if (buffer[0] == 0xAA && buffer[7] == 0x55)
+                        {
+                            byte[] frame = buffer.GetRange(0, 8).ToArray();
+                            buffer.RemoveRange(0, 8);
+                            ParseFrame(frame);  // ← binarna analiza
+                        }
+                        else
+                        {
+                            break;  // nie binarna → sprawdzimy string
+                        }
+                    }
+
+                    // Próbujemy sparsować pozostałe dane jako string (debug)
+                    if (buffer.Count > 0)
+                    {
+                        try
+                        {
+                            string debugText = Encoding.ASCII.GetString(buffer.ToArray());
+                            if (!string.IsNullOrWhiteSpace(debugText))
+                                ConsolePrint?.Invoke($"[DEBUG] {debugText}", "yellow");
+
+                            buffer.Clear();  // Zakładamy że nie będą się mieszać ramki binarne i stringi
+                        }
+                        catch (Exception ex)
+                        {
+                            ConsolePrint?.Invoke($"[DecodeError] {ex.Message}", "red");
+                            buffer.Clear(); // czyszczenie na wszelki wypadek
+                        }
                     }
                 }
             }
@@ -71,18 +103,47 @@ namespace PanTiltApp.Network
             }
         }
 
+
+        private void ParseFrame(byte[] frame)
+        {
+            byte id = frame[1];
+            byte cmd = frame[2];
+            short pos = BitConverter.ToInt16(frame, 3);
+            short spd = BitConverter.ToInt16(frame, 5);
+
+            if ((id & 0xF0) == 0xB0)
+            {
+                int servoId = id & 0x0F;
+                ConsolePrint?.Invoke($"[MOVING] Servo {servoId}: Pos={pos}, Spd={spd}", "cyan");
+            }
+            else if ((id & 0xF0) == 0xC0)
+            {
+                int servoId = id & 0x0F;
+                ConsolePrint?.Invoke($"[FRAME PARSED] Servo {servoId}: CMD={cmd}, Pos={pos}, Spd={spd}", "purple");
+            }
+            else
+            {
+                ConsolePrint?.Invoke($"[UNKNOWN FRAME] ID={id:X2}, CMD={cmd:X2}, Pos={pos}, Spd={spd}", "gray");
+            }
+        }
+
+
         public void Close()
         {
+            if (!IsConnected)
+                return;
+
             try
             {
                 _isReceiving = false;
                 _networkStream?.Close();
                 _client?.Close();
-                ConsolePrint?.Invoke("Disconnected", "red");
+                ConsolePrint?.Invoke("Rozłączono połączenie IP z Raspberry Pi.", "yellow");
             }
-            catch (Exception ex)
+            catch
             {
-                ConsolePrint?.Invoke($"Error closing connection: {ex.Message}", "red");
+                // NIE pokazujemy błędu jeśli połączenie i tak już nie istniało.
+                // Można dodać log do pliku, jeśli chcesz mieć monitoring w tle.
             }
             finally
             {
@@ -90,18 +151,19 @@ namespace PanTiltApp.Network
                 _networkStream = null;
             }
         }
-        public string Send(byte[] data)
+
+        public void Send(byte[] data)
         {
             if (!IsConnected || _networkStream == null)
-                return "Brak połączenia z serwerem.";
+                ConsolePrint?.Invoke("Brak połączenia z serwerem.", "red");
             try
             {
                 _networkStream.Write(data, 0, data.Length);
-                return $"Wysłano ramkę binarną: {BitConverter.ToString(data)}";
+                ConsolePrint?.Invoke($"Wysłano ramkę binarną: {BitConverter.ToString(data)}", "green");
             }
             catch (Exception ex)
             {
-                return $"Błąd wysyłania ramki binarnej: {ex.Message}";
+                ConsolePrint?.Invoke($"Błąd wysyłania ramki binarnej: {ex.Message}", "red");
             }
         }
     }

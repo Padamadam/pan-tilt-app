@@ -8,7 +8,7 @@ namespace PanTiltApp.WiFi
     public class WiFiConnection
     {
         private readonly WiFiConnectionUI ui;
-        private readonly AppConsoleLogic console;
+        private readonly AppConsoleLogic consoleLogic;
 
         private IPConnectionHandler? connectionHandler;
         private RaspberryPiSSHClient? sshClient;
@@ -16,13 +16,15 @@ namespace PanTiltApp.WiFi
         public Control UI => ui.Panel; // dostęp do kontrolki
         private const string ConfigFilePath = "config.ini";
         public WiFiConnectionUI UIInternal => ui;
+        public event Action<string, string>? consolePrint;
 
 
         public WiFiConnection(AppConsoleLogic console)
         {
-            this.console = console;
             this.ui = new WiFiConnectionUI();
             this.ui.LoadConfig();
+            this.consolePrint += console.PrintMessage;
+            this.consoleLogic = console;
             WireEvents();
         }
 
@@ -39,27 +41,26 @@ namespace PanTiltApp.WiFi
         private async Task Connect()
         {
             SaveConfig();
-            console.PrintMessage("Łączenie przez IP...");
+            consolePrint?.Invoke("Łączenie przez IP...", "blue");
 
             string ip = ui.IpAddressField.Text;
             int port = int.Parse(ui.PortNumberField.Text);
 
             connectionHandler = new IPConnectionHandler(ip, port);
-            connectionHandler.ConsolePrint += console.PrintMessage;
+            connectionHandler.ConsolePrint += (msg, color) => consolePrint?.Invoke(msg, color);
             
             ui.DisconnectButton.Enabled = true;
-            // ui.SetConnectedState();
+            ui.SetConnectedState();
 
             if (await connectionHandler.ConnectAsync())
             {
                 ui.ConnectButton.Enabled = false;
-                console.PrintMessage("Połączono przez IP.");
-                console.SetConnectionHandler(connectionHandler);
-
+                consolePrint?.Invoke("Połączono przez IP.", "green");
+                consoleLogic.SetConnectionHandler(connectionHandler);
             }
             else
             {
-                console.PrintMessage("Nie udało się połączyć.");
+                consolePrint?.Invoke("Nie udało się połączyć.", "red");
             }
         }
 
@@ -69,7 +70,7 @@ namespace PanTiltApp.WiFi
             ui.ConnectButton.Enabled = true;
             ui.DisconnectButton.Enabled = false;
             // ui.SetDisconnectedState();
-            console.PrintMessage("Rozłączono.");
+            consolePrint?.Invoke("Rozłączono.", "yellow");
         }
 
         private async Task ConnectSSH()
@@ -79,13 +80,16 @@ namespace PanTiltApp.WiFi
             string password = "pan-tilt";
 
             sshClient = new RaspberryPiSSHClient(host, username, password);
-            console.PrintMessage("Nawiązywanie połączenia SSH...");
+            sshClient.ConsolePrint += (msg, color) => consolePrint?.Invoke(msg, color);
+
+
+            consolePrint?.Invoke("Nawiązywanie połączenia SSH...", "blue");
 
             bool connected = await Task.Run(() => sshClient.Connect());
 
             if (connected)
             {
-                console.PrintMessage("Połączono przez SSH.");
+                // consolePrint?.Invoke("Połączono przez SSH.");
                 ui.SSHConnectButton.Enabled = false;
                 ui.SSHDisconnectButton.Enabled = true;
 
@@ -94,26 +98,40 @@ namespace PanTiltApp.WiFi
                     sshClient.StartServer();
                 });
 
-                console.PrintMessage("Uruchomiono usługę serwera SSH.");
+                consolePrint?.Invoke("Uruchomiono usługę serwera SSH.", "green");
             }
             else
             {
-                console.PrintMessage("Nie udało się połączyć przez SSH.");
+                consolePrint?.Invoke("Nie udało się połączyć przez SSH.", "red");
             }
         }
 
         private void DisconnectSSH()
         {
-            if (sshClient != null)
-            {
-                console.PrintMessage("Rozłączanie SSH...");
-                sshClient.Disconnect();
-                console.PrintMessage("Rozłączono z Raspberry Pi.");
+            consolePrint?.Invoke("Rozpoczynanie rozłączania z Raspberry Pi...", "blue");
 
-                ui.SSHConnectButton.Enabled = true;
-                ui.SSHDisconnectButton.Enabled = false;
+            if (connectionHandler != null && connectionHandler.IsConnected)
+            {
+                consolePrint?.Invoke("Rozłączanie połączenia IP...", "blue");
+                connectionHandler.Close();
+                ui.ConnectButton.Enabled = true;
+                ui.DisconnectButton.Enabled = false;
+                consolePrint?.Invoke("Połączenie IP rozłączone.", "blue");
             }
+
+            if (sshClient != null && sshClient.IsConnected)
+            {
+                consolePrint?.Invoke("Rozłączanie SSH...", "blue");
+                sshClient.Disconnect();
+                consolePrint?.Invoke("Rozłączono połączenie SSH.", "blue");
+            }
+
+            ui.SSHConnectButton.Enabled = true;
+            ui.SSHDisconnectButton.Enabled = false;
+
+            consolePrint?.Invoke("Rozłączono z Raspberry Pi.", "blue");
         }
+
         private void SaveConfig()
         {
             try
@@ -124,13 +142,12 @@ namespace PanTiltApp.WiFi
                     $"ip_address = {ui.IpAddressField.Text}",
                     $"port = {ui.PortNumberField.Text}"
                 });
-                console.PrintMessage($"IP = {ui.IpAddressField.Text}");
+                consolePrint?.Invoke($"IP = {ui.IpAddressField.Text}", "green");
             }
             catch (Exception ex)
             {
-                console.PrintMessage($"Błąd zapisu do config.ini: {ex.Message}");
+                consolePrint?.Invoke($"Błąd zapisu do config.ini: {ex.Message}", "red");
             }
         }
-        
     }
 }

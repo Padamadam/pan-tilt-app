@@ -28,6 +28,9 @@ namespace PanTiltApp.AppConsole
                 "green" => Color.Green,
                 "yellow" => Color.Yellow,
                 "red" => Color.Red,
+                "purple" => Color.Purple,
+                "cyan" => Color.Cyan,
+                "gray" => Color.Gray,
                 _ => Color.White
             };
 
