@@ -112,7 +112,6 @@ namespace PanTiltApp.WiFi
 
             if (connectionHandler != null && connectionHandler.IsConnected)
             {
-                consolePrint?.Invoke("Rozłączanie połączenia IP...", "blue");
                 connectionHandler.Close();
                 ui.ConnectButton.Enabled = true;
                 ui.DisconnectButton.Enabled = false;

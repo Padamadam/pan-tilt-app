@@ -16,7 +16,6 @@ namespace PanTiltApp.AppConsole
         private bool isResettingText = false;
         private string lastValidInput = Prompt;
 
-
         private Panel consolePanel;
 
         public event EventHandler<string>? CommandSubmitted;

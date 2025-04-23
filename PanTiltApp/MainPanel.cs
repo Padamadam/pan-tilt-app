@@ -85,6 +85,8 @@ namespace PanTiltApp
 
             controlLogic = new ControlLogic(console);
             controlUI = new ControlUI();
+            controlLogic.ConnectJoystick(controlUI);
+
 
             feedbackLogic = new FeedbackLogic(console);
             feedbackUI = new FeedbackUI();
