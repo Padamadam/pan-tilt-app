@@ -65,14 +65,16 @@ namespace PanTiltApp.Network
                     while (buffer.Count >= 8)
                     {
                         // Sprawdź, czy mamy potencjalną ramkę binarną
-                        if (buffer[0] == 0xAA && buffer[7] == 0x55)
+                        if (buffer[0] == 0xAA && (buffer[7] & 0x0F) == 0x05)
                         {
                             byte[] frame = buffer.GetRange(0, 8).ToArray();
                             buffer.RemoveRange(0, 8);
-                            ParseFrame(frame);  // ← binarna analiza
+                            // ParseFrame(frame);  // ← binarna analiza
+                            // ConsolePrint?.Invoke($"[RX] Binary frame: {BitConverter.ToString(frame)}", "green");
                         }
                         else
                         {
+                            // ConsolePrint?.Invoke($"[DEBUG] Non-binary data: {BitConverter.ToString(buffer.ToArray())}", "yellow");
                             break;  // nie binarna → sprawdzimy string
                         }
                     }

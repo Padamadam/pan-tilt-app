@@ -1,12 +1,16 @@
 using PanTiltApp.AppConsole;
 
+
+// TODO sterowanie predkosciami a nie polozeniami
+// TODO zmiana struktury ramek - rownolegle info o obu serwach!!!!
+
 namespace PanTiltApp.Operate
 {
     public class ControlLogic
     {
         private (float x, float y) lastJoystickPosition;
         private System.Threading.Timer? commandLoopTimer;
-        private readonly int intervalMs = 500;
+        private readonly int intervalMs = 50;
 
         private readonly AppConsoleLogic console;
 
@@ -50,27 +54,39 @@ namespace PanTiltApp.Operate
             float x = lastJoystickPosition.x;
             float y = lastJoystickPosition.y;
 
-            // dead zone check again for safety
             if (Math.Abs(x) < 0.05f && Math.Abs(y) < 0.05f)
                 return;
 
-            int positionStep = 2;
             int minSpeed = 200;
             int maxSpeed = 1000;
 
+            int pitchSpeed = 0;
+            int yawSpeed = 0;
+            int pitchDir = 1;
+            int yawDir = 1;
+
+            byte cmd = 0x00;
+            if (y < -0.05f) { pitchDir = -1; cmd |= 0b1100; }
+            if (x < -0.05f) { yawDir   = -1; cmd |= 0b0011; }
+
+
             if (Math.Abs(y) >= 0.05f)
-            {
-                int pitchDir = y > 0 ? -1 : 1;
-                int pitchSpeed = minSpeed + (int)(Math.Min(1.0f, Math.Abs(y)) * (maxSpeed - minSpeed));
-                console.dispatcher?.SendServoFrame(1, pitchDir * positionStep, pitchSpeed);
-            }
+                pitchSpeed = minSpeed + (int)(Math.Min(1.0f, Math.Abs(y)) * (maxSpeed - minSpeed));
 
             if (Math.Abs(x) >= 0.05f)
-            {
-                int yawDir = x > 0 ? 1 : -1;
-                int yawSpeed = minSpeed + (int)(Math.Min(1.0f, Math.Abs(x)) * (maxSpeed - minSpeed));
-                console.dispatcher?.SendServoFrame(2, yawDir * positionStep, yawSpeed);
-            }
+                yawSpeed = minSpeed + (int)(Math.Min(1.0f, Math.Abs(x)) * (maxSpeed - minSpeed));
+
+                ushort pitchVel = (ushort)Math.Clamp(Math.Abs(pitchSpeed), 0, 4095);
+                ushort yawVel   = (ushort)Math.Clamp(Math.Abs(yawSpeed), 0, 4095);
+
+                ushort pitchPos = 0; // joystick nie ustawia pozycji
+                ushort yawPos   = 0;
+
+                console.dispatcher?.SendDualServoFullFrame(
+                    pitchPos, yawPos,
+                    pitchVel, yawVel,
+                    cmd
+             );
         }
     }
 }

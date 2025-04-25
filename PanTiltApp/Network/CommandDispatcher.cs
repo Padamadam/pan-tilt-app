@@ -14,7 +14,10 @@ namespace PanTiltApp.Communication
             logAction = logCallback;
         }
 
-        public void SendServoFrame(int id, int position, int speed)
+       public void SendDualServoFullFrame(
+            ushort pitchPos, ushort yawPos,
+            ushort pitchVel, ushort yawVel,
+            byte cmd = 0x00)
         {
             if (!connectionHandler.IsConnected)
             {
@@ -22,26 +25,20 @@ namespace PanTiltApp.Communication
                 return;
             }
 
-            byte[] frame = new byte[8];
-            frame[0] = 0xAA;
-            frame[1] = (byte)id;
+            byte[] buffer = new byte[8];
 
-            byte command = (byte)(position >= 0 ? 0x01 : 0x02);
-            frame[2] = command;
+            buffer[0] = 0xAA;
+            buffer[1] = (byte)((cmd & 0x0F) << 4 | ((pitchPos >> 8) & 0x0F));
+            buffer[2] = (byte)(pitchPos & 0xFF);
+            buffer[3] = (byte)((yawPos >> 4) & 0xFF);
+            buffer[4] = (byte)(((yawPos & 0x0F) << 4) | ((pitchVel >> 8) & 0x0F));
+            buffer[5] = (byte)(pitchVel & 0xFF);
+            buffer[6] = (byte)((yawVel >> 4) & 0xFF);
+            buffer[7] = (byte)(((yawVel & 0x0F) << 4) | 0x05); // STOP = 0x05 w low nibble
 
-            short absPos = (short)Math.Abs(position);
-            byte[] posBytes = BitConverter.GetBytes(absPos);
-            frame[3] = posBytes[0];
-            frame[4] = posBytes[1];
+            connectionHandler.Send(buffer);
 
-            byte[] spdBytes = BitConverter.GetBytes((short)speed);
-            frame[5] = spdBytes[0];
-            frame[6] = spdBytes[1];
-
-            frame[7] = 0x55;
-
-            connectionHandler.Send(frame);
-            logAction($"Sent Binary Frame: ID={id}, CMD={command} POS={absPos}, SPD={speed}", "green");
+            logAction($"[TX] CMD={cmd} | pitch: pos={pitchPos}, vel={pitchVel} | yaw: pos={yawPos}, vel={yawVel}", "green");
         }
 
         public void SendLaserFrame(bool on)
@@ -52,18 +49,16 @@ namespace PanTiltApp.Communication
                 return;
             }
 
-            byte[] frame = new byte[8];
-            frame[0] = 0xAA;
-            frame[1] = 0x32;
-            frame[2] = 0x01;
-            frame[3] = on ? (byte)0x01 : (byte)0x00;
-            frame[4] = 0x00;
-            frame[5] = 0x00;
-            frame[6] = 0x00;
-            frame[7] = 0x55;
+            byte cmd = on ? (byte)0x05 : (byte)0x06;
 
-            connectionHandler.Send(frame);
-            logAction($"Sent Laser Frame: {(on ? "ON" : "OFF")}", "green");
+            byte[] buffer = new byte[8];
+            buffer[0] = 0xAA;
+            buffer[1] = (byte)((cmd & 0x0F) << 4);  // reszta bajtów = 0
+            buffer[7] = 0x05;
+
+            connectionHandler.Send(buffer);
+            logAction($"[TX] Laser {(on ? "ON" : "OFF")} (CMD={cmd})", "green");
         }
+
     }
 }

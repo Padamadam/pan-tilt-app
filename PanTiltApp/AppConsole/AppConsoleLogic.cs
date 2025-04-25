@@ -13,7 +13,10 @@ namespace PanTiltApp.AppConsole
         private int historyIndex = -1;
         public AppConsoleUI UI => ui;
         public CommandDispatcher? dispatcher;
-
+        private int lastPitchVel = 0;
+        private int lastPitchDir = 1;
+        private int lastYawVel = 0;
+        private int lastYawDir = 1;
 
         public AppConsoleLogic(AppConsoleUI ui)
         {
@@ -57,16 +60,28 @@ namespace PanTiltApp.AppConsole
             ui.ScrollToBottom();
 
             // Obsługa poleceń pitch/yaw → ID1/ID2
-            if (command.ToLower().StartsWith("pitch ") || command.ToLower().StartsWith("yaw "))
+            if (command.ToLower().StartsWith("move "))
             {
                 var parts = command.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-                if (parts.Length == 3 &&
-                    int.TryParse(parts[1], out int position) &&
-                    int.TryParse(parts[2], out int speed))
+               if (parts.Length == 5 &&
+                    ushort.TryParse(parts[1], out ushort pitchPos) &&
+                    ushort.TryParse(parts[2], out ushort yawPos) &&
+                    short.TryParse(parts[3], out short pitchSpeed) &&
+                    short.TryParse(parts[4], out short yawSpeed))
                 {
-                    int id = command.ToLower().StartsWith("pitch") ? 1 : 2;
-                    dispatcher?.SendServoFrame(id, position, speed);
-                    return $"Command sent: {(id == 1 ? "Pitch" : "Yaw")} → Pos {position}, Speed {speed}";
+                    byte cmd = 0x00;
+                    if (pitchSpeed < 0) cmd |= 0b1100;
+                    if (yawSpeed   < 0) cmd |= 0b0011;
+
+                    dispatcher?.SendDualServoFullFrame(
+                        pitchPos,
+                        yawPos,
+                        (ushort)Math.Clamp((int)Math.Abs(pitchSpeed), 0, 4095),
+                        (ushort)Math.Clamp((int)Math.Abs(yawSpeed), 0, 4095),
+                        cmd
+                    );
+
+                    return $"[CMD] move → pitch: pos={pitchPos}, speed={pitchSpeed} | yaw: pos={yawPos}, speed={yawSpeed}";
                 }
                 else
                 {
