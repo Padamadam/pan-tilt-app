@@ -69,7 +69,7 @@ namespace PanTiltApp.Network
                         {
                             byte[] frame = buffer.GetRange(0, 8).ToArray();
                             buffer.RemoveRange(0, 8);
-                            // ParseFrame(frame);  // ← binarna analiza
+                            ParseFrame(frame);  // binarna analiza
                             // ConsolePrint?.Invoke($"[RX] Binary frame: {BitConverter.ToString(frame)}", "green");
                         }
                         else
@@ -86,7 +86,7 @@ namespace PanTiltApp.Network
                         {
                             string debugText = Encoding.ASCII.GetString(buffer.ToArray());
                             if (!string.IsNullOrWhiteSpace(debugText))
-                                ConsolePrint?.Invoke($"[DEBUG] {debugText}", "yellow");
+                                // ConsolePrint?.Invoke($"[DEBUG] {debugText}", "yellow");
 
                             buffer.Clear();  // Zakładamy że nie będą się mieszać ramki binarne i stringi
                         }
@@ -108,26 +108,27 @@ namespace PanTiltApp.Network
 
         private void ParseFrame(byte[] frame)
         {
-            byte id = frame[1];
-            byte cmd = frame[2];
-            short pos = BitConverter.ToInt16(frame, 3);
-            short spd = BitConverter.ToInt16(frame, 5);
+            if (frame.Length != 8)
+            {
+                ConsolePrint?.Invoke($"[ParseError] Frame length invalid: {frame.Length}", "red");
+                return;
+            }
 
-            if ((id & 0xF0) == 0xB0)
+            if (frame[0] != 0xAA || (frame[7] & 0x0F) != 0x05)
             {
-                int servoId = id & 0x0F;
-                ConsolePrint?.Invoke($"[MOVING] Servo {servoId}: Pos={pos}, Spd={spd}", "cyan");
+                ConsolePrint?.Invoke($"[ParseError] Invalid start/stop bytes", "red");
+                return;
             }
-            else if ((id & 0xF0) == 0xC0)
-            {
-                int servoId = id & 0x0F;
-                ConsolePrint?.Invoke($"[FRAME PARSED] Servo {servoId}: CMD={cmd}, Pos={pos}, Spd={spd}", "purple");
-            }
-            else
-            {
-                ConsolePrint?.Invoke($"[UNKNOWN FRAME] ID={id:X2}, CMD={cmd:X2}, Pos={pos}, Spd={spd}", "gray");
-            }
+
+            byte cmd = (byte)((frame[1] >> 4) & 0x0F);
+            ushort pitchPos = (ushort)(((frame[1] & 0x0F) << 8) | frame[2]);
+            ushort yawPos = (ushort)((frame[3] << 4) | ((frame[4] >> 4) & 0x0F));
+            ushort pitchVel = (ushort)(((frame[4] & 0x0F) << 8) | frame[5]);
+            ushort yawVel = (ushort)((frame[6] << 4) | ((frame[7] >> 4) & 0x0F));
+
+            ConsolePrint?.Invoke($"[STATUS] CMD=0x{cmd:X} | PitchPos={pitchPos}, PitchVel={pitchVel} | YawPos={yawPos}, YawVel={yawVel}", "cyan");
         }
+
 
 
         public void Close()
@@ -161,7 +162,7 @@ namespace PanTiltApp.Network
             try
             {
                 _networkStream.Write(data, 0, data.Length);
-                ConsolePrint?.Invoke($"Wysłano ramkę binarną: {BitConverter.ToString(data)}", "green");
+                // ConsolePrint?.Invoke($"Wysłano ramkę binarną: {BitConverter.ToString(data)}", "green");
             }
             catch (Exception ex)
             {

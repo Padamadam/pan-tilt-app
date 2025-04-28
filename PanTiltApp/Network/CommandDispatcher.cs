@@ -19,6 +19,7 @@ namespace PanTiltApp.Communication
             ushort pitchVel, ushort yawVel,
             byte cmd = 0x00)
         {
+            // logAction($"Sending command: {cmd:X2} | pitch: pos={pitchPos}, vel={pitchVel} | yaw: pos={yawPos}, vel={yawVel}", "green");
             if (!connectionHandler.IsConnected)
             {
                 logAction("Connection not established. Cannot send command.", "red");
@@ -57,7 +58,7 @@ namespace PanTiltApp.Communication
             buffer[7] = 0x05;
 
             connectionHandler.Send(buffer);
-            logAction($"[TX] Laser {(on ? "ON" : "OFF")} (CMD={cmd})", "green");
+            // logAction($"[TX] Laser {(on ? "ON" : "OFF")} (CMD={cmd})", "green");
         }
 
     }

@@ -13,6 +13,8 @@ namespace PanTiltApp.Operate
         private const int knobSize = 30; // odsuń kółko od krawędzi
 
         public event EventHandler<(float x, float y)>? JoystickMoved;
+        public event EventHandler<bool>? SwitchToggled;
+
 
         public ControlUI()
         {
@@ -47,18 +49,31 @@ namespace PanTiltApp.Operate
                 BackColor = Color.Transparent
             };
 
-            layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
-            layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+            // Tworzymy nowy CheckBox
+            var sendFramesSwitch = new CheckBox
+            {
+                Text = "Enable turret control",
+                Dock = DockStyle.Top,
+                Checked = false, // domyślnie wyłączony
+                AutoSize = true,
+                Margin = new Padding(10),
+            };
+
+            layout.Controls.Add(sendFramesSwitch, 0, 0);
+            layout.Controls.Add(joystickBase, 0, 1);
+            layout.RowCount = 2;
+            layout.RowStyles.Add(new RowStyle(SizeType.AutoSize)); // dla CheckBox
+            layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100)); // dla Joysticka
 
             // Dodaj joystickBase do środka komórki
-            layout.Controls.Add(joystickBase, 0, 0);
-            layout.SetCellPosition(joystickBase, new TableLayoutPanelCellPosition(0, 0));
+            layout.SetCellPosition(joystickBase, new TableLayoutPanelCellPosition(0, 1));
 
             // Wyłącz zakotwiczenie joysticka — żeby się nie rozciągał
             joystickBase.Anchor = AnchorStyles.None;
             joystickBase.MinimumSize = new Size(300, 300);
             joystickBase.MaximumSize = new Size(300, 300);
             joystickBase.Size = new Size(300, 300); // kontrolnie
+
 
 
             // Dodaj layout do kontrolki
@@ -72,7 +87,10 @@ namespace PanTiltApp.Operate
                 joystickBase.Invalidate(); // odśwież
             };
 
-
+            sendFramesSwitch.CheckedChanged += (sender, args) =>
+            {
+                SwitchToggled?.Invoke(this, sendFramesSwitch.Checked);
+            };
         }
 
         private void JoystickBase_Paint(object? sender, PaintEventArgs e)

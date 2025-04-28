@@ -45,20 +45,23 @@ namespace PanTiltApp.Network
         /// <summary>
         /// Wykonuje podaną komendę na Raspberry Pi
         /// </summary>
-        public void ExecuteCommand(string command)
+        public bool ExecuteCommand(string command)
         {
             if (!client.IsConnected)
-                return;           
+                return false;           
 
             try
             {
                 var cmd = client.CreateCommand(command);
                 string output = cmd.Execute();
-                return;
+                if (!string.IsNullOrEmpty(output))
+                    ConsolePrint?.Invoke(output, "gray");
+                return true;
             }
             catch (Exception ex)
             {
                 ConsolePrint?.Invoke($"Błąd podczas wykonywania komendy: {ex.Message}", "red");
+                return false;
             }
         }
 
@@ -69,6 +72,8 @@ namespace PanTiltApp.Network
         {
             if (client.IsConnected)
             {
+                string command = "^C";
+                ExecuteCommand(command);
                 client.Disconnect();
             }
         }
@@ -78,8 +83,27 @@ namespace PanTiltApp.Network
         /// </summary>
         public void StartServer()
         {
-            string command = "sudo python3 /home/pan-tilt/Documents/apka/server.py";
-            ExecuteCommand(command);
+            if (!client.IsConnected)
+                return;
+
+            try
+            {
+                ConsolePrint?.Invoke("Zatrzymywanie starych procesów server.py...", "yellow");
+                ExecuteCommand("sudo pkill -f server.py");  // zabij stare serwery
+                System.Threading.Thread.Sleep(500);         // daj pół sekundy na ubicie procesu
+
+                ConsolePrint?.Invoke("Sprawdzanie urządzeń USB...", "yellow");
+                ExecuteCommand("ls /dev/ttyUSB* || echo 'No USB device found'");  // sprawdź, czy ESP32 jest podłączony
+
+                // Start server
+                if(ExecuteCommand("sudo python3 /home/pan-tilt/Documents/apka/server.py"))
+                    ConsolePrint?.Invoke("Uruchomiono serwer TCP na Raspberry Pi...", "green");
+
+            }
+            catch (Exception ex)
+            {
+                ConsolePrint?.Invoke($"Błąd podczas uruchamiania serwera: {ex.Message}", "red");
+            }
         }
     }
 }
