@@ -74,36 +74,19 @@ namespace PanTiltApp.WiFi
             buttonPanel.Controls.Add(ConnectButton, 0, 0);
             buttonPanel.Controls.Add(DisconnectButton, 1, 0);
 
-            var sshButtonPanel = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 2 };
-            sshButtonPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
-            sshButtonPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
-
             SSHConnectButton = new Button
             {
-                Text = "SSH Connect",
+                Text = "Initialize turret system",
                 BackColor = Color.Blue,
                 ForeColor = Color.White,
                 Font = new Font("Courier New", 8, FontStyle.Bold),
                 Dock = DockStyle.Fill
             };
 
-            SSHDisconnectButton = new Button
-            {
-                Text = "SSH Disconnect",
-                BackColor = Color.Gray,
-                ForeColor = Color.White,
-                Font = new Font("Courier New", 8, FontStyle.Bold),
-                Dock = DockStyle.Fill,
-                Enabled = false
-            };
-
-            sshButtonPanel.Controls.Add(SSHConnectButton, 0, 0);
-            sshButtonPanel.Controls.Add(SSHDisconnectButton, 1, 0);
-
             wifiPanel.Controls.Add(ipPanel);
             wifiPanel.Controls.Add(portPanel);
             wifiPanel.Controls.Add(buttonPanel);
-            wifiPanel.Controls.Add(sshButtonPanel);
+            wifiPanel.Controls.Add(SSHConnectButton);
 
             return wifiPanel;
         }

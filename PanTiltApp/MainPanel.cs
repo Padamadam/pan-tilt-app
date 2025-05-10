@@ -17,9 +17,9 @@ namespace PanTiltApp
         // private AppConsoleUI consoleUI;
         private readonly AppConsoleLogic console;
         private readonly AppConsoleUI consoleUI;
-        private WiFiConnection? wifiLogic;
-        private RaspberryPiSSHClient? sshClient;
-        private IPConnectionHandler? connectionHandler;
+        public WiFiConnection? wifiLogic;
+        // private RaspberryPiSSHClient? sshClient;
+        // private IPConnectionHandler? connectionHandler;
         // private AppConsole? console;
         public WiFiConnectionUI? WiFiUI => wifiLogic?.UIInternal;
         private CameraUI? cameraUI;
@@ -51,12 +51,11 @@ namespace PanTiltApp
             {
                 Dock = DockStyle.Fill,
                 ColumnCount = 1,
-                RowCount = 3,
+                RowCount = 1,
             };
 
             mainLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));  // Sekcje
-            mainLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 150)); // Konsola (wysokość jak wcześniej)
-            mainLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 20));  // MARGINES DOLNY
+            // mainLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 150)); // Konsola (wysokość jak wcześniej)
 
             // Sections Panel (Stacked WiFi/Bluetooth + Camera + Stacked Turret)
             var sectionsPanel = new TableLayoutPanel
@@ -72,16 +71,95 @@ namespace PanTiltApp
 
             // Row Proportions
             sectionsPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 10)); // WiFi Label / Turret Control Label
-            sectionsPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 70)); // WiFi Functionality / Turret Control Functionality
-            sectionsPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 10)); // Bluetooth Label / Turret Orientation Label
-            sectionsPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 10)); // Bluetooth Functionality / Turret Orientation Functionality
+            sectionsPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 60)); // WiFi Functionality / Turret Control Functionality
+            sectionsPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 10)); // Laser Label / Turret Orientation Label
+            sectionsPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 20)); // Laser Functionality / Turret Orientation Functionality
 
             // First Column (WiFi & Bluetooth Stacked)
             // wifiUI = new WiFiConnectionUI();
             wifiLogic = new WiFiConnection(console);
 
             cameraLogic = new CameraLogic(console);
-            cameraUI = new CameraUI();
+            var ip = wifiLogic?.UIInternal?.IpAddressField.Text ?? "127.0.0.1";
+            cameraLogic = new CameraLogic(console);
+            cameraUI = new CameraUI(ip);
+            cameraUI.InitializeLogic(cameraLogic, wifiLogic.UIInternal.IpAddressField);
+
+            cameraUI.ConsolePrint += console.PrintMessage;
+            wifiLogic.OnSSHConnected += ssh => cameraUI.SetSSHClient(ssh);
+
+
+            // Laser Control Panel with 2 buttons
+            var laserControlPanel = new TableLayoutPanel
+            {
+                RowCount = 2,
+                ColumnCount = 2,
+                Dock = DockStyle.Fill,
+            };
+            laserControlPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
+            laserControlPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
+            laserControlPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 50));
+            laserControlPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 50)); // Extra space margin
+
+            var laserOnButton = new Button
+            {
+                Text = "Laser ON",
+                BackColor = Color.DarkGreen,
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat,
+                Font = new Font("Courier New", 12, FontStyle.Bold),
+                Dock = DockStyle.Fill,
+                Height = 50,
+            };
+
+            var laserOffButton = new Button
+            {
+                Text = "Laser OFF",
+                BackColor = Color.DarkRed,
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat,
+                Font = new Font("Courier New", 12, FontStyle.Bold),
+                Dock = DockStyle.Fill,
+            };
+
+            laserOnButton.FlatAppearance.BorderSize = 2;
+            laserOffButton.FlatAppearance.BorderSize = 2;
+            laserOnButton.FlatAppearance.BorderColor = Color.White;
+            laserOffButton.FlatAppearance.BorderColor = Color.White;
+
+            laserControlPanel.Controls.Add(laserOnButton, 0, 0);
+            laserControlPanel.Controls.Add(laserOffButton, 1, 0);
+
+            bool isLaserOn = false;
+            laserOnButton.Enabled = true;
+            laserOffButton.Enabled = false;
+
+            laserOnButton.Click += (s, e) =>
+            {
+                if (!isLaserOn)
+                {
+                    isLaserOn = true;
+                    laserOnButton.Enabled = false;
+                    laserOffButton.Enabled = true;
+
+                    console?.dispatcher?.SendLaserFrame(true);
+                    console?.PrintMessage("Laser turned ON", "cyan");
+                }
+            };
+
+            laserOffButton.Click += (s, e) =>
+            {
+                if (isLaserOn)
+                {
+                    isLaserOn = false;
+                    laserOnButton.Enabled = true;
+                    laserOffButton.Enabled = false;
+
+                    console?.dispatcher?.SendLaserFrame(false);
+                    console?.PrintMessage("Laser turned OFF", "cyan");
+                }
+            };
+
 
             controlLogic = new ControlLogic(console);
             controlUI = new ControlUI();
@@ -95,11 +173,12 @@ namespace PanTiltApp
             sectionsPanel.Controls.Add(CreateSectionLabel("WiFi Connection"), 0, 0);
             sectionsPanel.Controls.Add(wifiLogic.UI, 0, 1);
 
+            sectionsPanel.Controls.Add(CreateSectionLabel("Laser"), 0, 2);
+            sectionsPanel.Controls.Add(laserControlPanel, 0, 3);
 
             sectionsPanel.Controls.Add(CreateSectionLabel("Camera Feed"), 1, 0);
-            sectionsPanel.SetRowSpan(cameraUI, 4); // span przez 4 wiersze
             sectionsPanel.Controls.Add(cameraUI, 1, 1);
-
+            sectionsPanel.SetRowSpan(cameraUI, 3);
 
             sectionsPanel.Controls.Add(CreateSectionLabel("Turret Control"), 2, 0);
             sectionsPanel.Controls.Add(controlUI, 2, 1);

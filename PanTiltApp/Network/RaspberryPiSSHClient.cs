@@ -32,7 +32,7 @@ namespace PanTiltApp.Network
             try
             {
                 client.Connect();
-                ConsolePrint?.Invoke("Połączono z Raspberry Pi!", "green");
+                ConsolePrint?.Invoke("Połączono z głowicą", "green");
                 return true;
             }
             catch (Exception ex)
@@ -66,19 +66,6 @@ namespace PanTiltApp.Network
         }
 
         /// <summary>
-        /// Rozłącza się z Raspberry Pi
-        /// </summary>
-        public void Disconnect()
-        {
-            if (client.IsConnected)
-            {
-                string command = "^C";
-                ExecuteCommand(command);
-                client.Disconnect();
-            }
-        }
-
-        /// <summary>
         /// Uruchamia serwer TCP na Raspberry Pi
         /// </summary>
         public void StartServer()
@@ -89,14 +76,14 @@ namespace PanTiltApp.Network
             try
             {
                 ConsolePrint?.Invoke("Zatrzymywanie starych procesów server.py...", "yellow");
-                ExecuteCommand("sudo pkill -f server.py");  // zabij stare serwery
+                ExecuteCommand("sudo pkill -f /home/pan-tilt/Documents/pan-tilt-rpi/server.py");  // zabij stare serwery
                 System.Threading.Thread.Sleep(500);         // daj pół sekundy na ubicie procesu
 
                 ConsolePrint?.Invoke("Sprawdzanie urządzeń USB...", "yellow");
                 ExecuteCommand("ls /dev/ttyUSB* || echo 'No USB device found'");  // sprawdź, czy ESP32 jest podłączony
 
                 // Start server
-                if(ExecuteCommand("sudo python3 /home/pan-tilt/Documents/apka/server.py"))
+                if(ExecuteCommand("sudo python3 /home/pan-tilt/Documents/pan-tilt-rpi/server.py"))
                     ConsolePrint?.Invoke("Uruchomiono serwer TCP na Raspberry Pi...", "green");
 
             }

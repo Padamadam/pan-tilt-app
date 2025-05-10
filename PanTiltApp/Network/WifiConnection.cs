@@ -17,7 +17,9 @@ namespace PanTiltApp.WiFi
         private const string ConfigFilePath = "config.ini";
         public WiFiConnectionUI UIInternal => ui;
         public event Action<string, string>? consolePrint;
-
+        public RaspberryPiSSHClient? SSHClient => sshClient;
+        public event Action<RaspberryPiSSHClient>? OnSSHConnected;
+        private bool sshPreviouslyConnected = false;
 
         public WiFiConnection(AppConsoleLogic console)
         {
@@ -35,7 +37,7 @@ namespace PanTiltApp.WiFi
             ui.DisconnectButton.Click += (s, e) => Disconnect();
 
             ui.SSHConnectButton.Click += async (s, e) => await ConnectSSH();
-            ui.SSHDisconnectButton.Click += (s, e) => DisconnectSSH();
+            
         }
 
         private async Task Connect()
@@ -82,53 +84,29 @@ namespace PanTiltApp.WiFi
             sshClient = new RaspberryPiSSHClient(host, username, password);
             sshClient.ConsolePrint += (msg, color) => consolePrint?.Invoke(msg, color);
 
-
-            consolePrint?.Invoke("Nawiązywanie połączenia SSH...", "blue");
+            consolePrint?.Invoke("Inizjalizacja systemu głowicy...", "blue");
 
             bool connected = await Task.Run(() => sshClient.Connect());
 
             if (connected)
             {
-                // consolePrint?.Invoke("Połączono przez SSH.");
-                ui.SSHConnectButton.Enabled = false;
-                ui.SSHDisconnectButton.Enabled = true;
+                sshPreviouslyConnected = true;
+                ui.SSHConnectButton.Text = "Reinitialize turret system";
+                ui.SSHConnectButton.BackColor = Color.MediumBlue;
+
+                OnSSHConnected?.Invoke(sshClient);
 
                 await Task.Run(() =>
                 {
                     sshClient.StartServer();
                 });
-
-                consolePrint?.Invoke("Uruchomiono usługę serwera SSH.", "green");
+                consolePrint?.Invoke("Uruchomiono serwer", "green");
             }
+
             else
             {
-                consolePrint?.Invoke("Nie udało się połączyć przez SSH.", "red");
+                consolePrint?.Invoke("Nie udało się zainicjalizować systemu.", "red");
             }
-        }
-
-        private void DisconnectSSH()
-        {
-            consolePrint?.Invoke("Rozpoczynanie rozłączania z Raspberry Pi...", "blue");
-
-            if (connectionHandler != null && connectionHandler.IsConnected)
-            {
-                connectionHandler.Close();
-                ui.ConnectButton.Enabled = true;
-                ui.DisconnectButton.Enabled = false;
-                consolePrint?.Invoke("Połączenie IP rozłączone.", "blue");
-            }
-
-            if (sshClient != null && sshClient.IsConnected)
-            {
-                consolePrint?.Invoke("Rozłączanie SSH...", "blue");
-                sshClient.Disconnect();
-                consolePrint?.Invoke("Rozłączono połączenie SSH.", "blue");
-            }
-
-            ui.SSHConnectButton.Enabled = true;
-            ui.SSHDisconnectButton.Enabled = false;
-
-            consolePrint?.Invoke("Rozłączono z Raspberry Pi.", "blue");
         }
 
         private void SaveConfig()
