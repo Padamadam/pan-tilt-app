@@ -102,7 +102,21 @@ namespace PanTiltApp.Operate
             }
         }
 
+        public void SendManualCommand(byte cmd, ushort pitch = 10, ushort yaw = 10, ushort pitchVel = 10, ushort yawVel = 10)
+        {
+            console.dispatcher?.SendDualServoFullFrame(
+                pitchPos: cmd is 0x0C or 0x0A ? pitch : (ushort)0,
+                yawPos: cmd is 0x03 or 0x01 ? yaw : (ushort)0,
+                pitchVel: pitchVel,
+                yawVel: yawVel,
+                cmd: cmd
+            );
+        }
 
+        public void StopMotion()
+        {
+            console.dispatcher?.SendDualServoFullFrame(0, 0, 1, 1, 0x00);
+        }
     }
 
     public class StatusFrame

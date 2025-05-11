@@ -12,7 +12,9 @@ namespace PanTiltApp.WiFi
         public Button ConnectButton { get; private set; }
         public Button DisconnectButton { get; private set; }
         public Button SSHConnectButton { get; private set; }
-        public Button SSHDisconnectButton { get; private set; }
+        // public Button SSHDisconnectButton { get; private set; }
+        public Label statusLabel { get; private set; }
+
         private const string ConfigFilePath = "config.ini";
 
         public Control Panel { get; private set; }
@@ -25,10 +27,11 @@ namespace PanTiltApp.WiFi
         private TableLayoutPanel BuildUI()
         {
             var wifiPanel = new TableLayoutPanel { Dock = DockStyle.Fill, RowCount = 4 };
-            wifiPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 25));
-            wifiPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 25));
-            wifiPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 25));
-            wifiPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 25));
+            wifiPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 20));
+            wifiPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 20));
+            wifiPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 20));
+            wifiPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 20));
+            wifiPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 20));
 
             var ipPanel = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 2 };
             ipPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 120));
@@ -47,6 +50,16 @@ namespace PanTiltApp.WiFi
             PortNumberField = new TextBox { Font = new Font("Courier New", 10), Dock = DockStyle.Fill };
             portPanel.Controls.Add(portLabel, 0, 0);
             portPanel.Controls.Add(PortNumberField, 1, 0);
+
+            statusLabel = new Label
+            {
+                Text = "Status: Idle",
+                ForeColor = Color.White,
+                Font = new Font("Courier New", 10, FontStyle.Italic),
+                Dock = DockStyle.Fill,
+                BackColor = Color.Transparent,
+                TextAlign = ContentAlignment.MiddleCenter
+            };
 
             var buttonPanel = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 2 };
             buttonPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
@@ -85,6 +98,7 @@ namespace PanTiltApp.WiFi
 
             wifiPanel.Controls.Add(ipPanel);
             wifiPanel.Controls.Add(portPanel);
+            wifiPanel.Controls.Add(statusLabel);
             wifiPanel.Controls.Add(buttonPanel);
             wifiPanel.Controls.Add(SSHConnectButton);
 
@@ -112,15 +126,15 @@ namespace PanTiltApp.WiFi
             DisconnectButton.BackColor = Color.OrangeRed;   // jaskrawszy czerwony
         }
 
-        public void SetDisconnectedState()
-        {
-            ConnectButton.BackColor = Color.Green;
-            DisconnectButton.BackColor = Color.Red;
-        }
+        // public void SetDisconnectedState()
+        // {
+        //     ConnectButton.BackColor = Color.Green;
+        //     DisconnectButton.BackColor = Color.Red;
+        // }
 
-        public bool IsAnyInputFieldFocused()
-        {
-            return IpAddressField.Focused || PortNumberField.Focused;
-        }
+        // public bool IsAnyInputFieldFocused()
+        // {
+        //     return IpAddressField.Focused || PortNumberField.Focused;
+        // }
     }
 }

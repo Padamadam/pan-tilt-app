@@ -10,7 +10,7 @@ namespace PanTiltApp.Operate
         private Point joystickCenter;
         private Point joystickKnob;
         private bool isDragging = false;
-        private const int knobSize = 30; // odsuń kółko od krawędzi
+        private const int knobSize = 30;
 
         public event EventHandler<(float x, float y)>? JoystickMoved;
         public event EventHandler<bool>? SwitchToggled;
@@ -29,7 +29,8 @@ namespace PanTiltApp.Operate
             {
                 Width = 300,
                 Height = 300,
-                BackColor = ColorTranslator.FromHtml("#06402B"),
+                // BackColor = ColorTranslator.FromHtml("#06402B"),
+                BackColor = Color.Transparent,
                 Margin = new Padding(10),
             };
 
@@ -52,10 +53,12 @@ namespace PanTiltApp.Operate
             // Tworzymy nowy CheckBox
             var sendFramesSwitch = new CheckBox
             {
-                Text = "Enable turret control",
+                Text = "Enable joystick control",
                 Dock = DockStyle.Top,
                 Checked = false, // domyślnie wyłączony
                 AutoSize = true,
+                Font = new Font("Courier New", 10, FontStyle.Regular),
+                ForeColor = Color.White,
                 Margin = new Padding(10),
             };
 
@@ -73,8 +76,6 @@ namespace PanTiltApp.Operate
             joystickBase.MinimumSize = new Size(300, 300);
             joystickBase.MaximumSize = new Size(300, 300);
             joystickBase.Size = new Size(300, 300); // kontrolnie
-
-
 
             // Dodaj layout do kontrolki
             this.Controls.Add(layout);

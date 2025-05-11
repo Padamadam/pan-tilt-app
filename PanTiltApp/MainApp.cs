@@ -3,90 +3,78 @@ using System.Drawing;
 using System.Windows.Forms;
 using PanTiltApp.Network;
 using PanTiltApp.AppConsole;
+using PanTiltApp;
 
 namespace PanTiltApp
 {
     public class MainApp : Form
     {
-        private TabControl tabControl;
-        private BasicControlsTab basicmainPanel;
-        private AdvancedControlsTab advancedmainPanel;
+        private MainPanel mainPanel;
+
         public MainApp()
         {
             InitializeUI();
-            this.KeyPreview = true;
-            this.KeyPress += (sender, e) =>
-            {
-                var wifiUI = basicmainPanel.mainPanel?.WiFiUI;
-                var inputBox = basicmainPanel.consoleLogic?.UI.InputBox;
-                
-                if (!char.IsControl(e.KeyChar) &&
-                    !(wifiUI?.IpAddressField.Focused ?? false) &&
-                    !(wifiUI?.PortNumberField.Focused ?? false))
-                {
-                    bool inputFocused = inputBox?.Focused ?? false;
-
-                    basicmainPanel.consoleLogic?.HandleGlobalKeyPress(e.KeyChar);
-                    if (!inputFocused)
-                    {
-                        // jeśli InputBox NIE był sfokusowany – dodaliśmy znak ręcznie → zablokuj beep
-                        e.Handled = true;
-                    }
-                }
-            };
         }
 
         private void InitializeUI()
         {
             this.Text = "Pan-Tilt Connection Manager";
             this.WindowState = FormWindowState.Maximized;
-            this.BackColor = ColorTranslator.FromHtml("#06402B"); // Green PCB-like background
-            
+            this.BackColor = ColorTranslator.FromHtml("#06402B"); 
             this.Icon = new Icon("Assets/ikona.ico");
 
-            // Initialize TabControl
-            tabControl = new TabControl
+            var consoleUI = new AppConsoleUI();
+            var consoleLogic = new AppConsoleLogic(consoleUI);
+
+            mainPanel = new MainPanel(consoleLogic)
             {
-                Dock = DockStyle.Fill,
-                Font = new Font("Courier New", 10, FontStyle.Regular),
-                TabIndex = 0
+                Dock = DockStyle.Fill
             };
 
-            tabControl.DrawMode = TabDrawMode.OwnerDrawFixed;
-            tabControl.DrawItem += TabControl_DrawItem;
-
-            basicmainPanel = new BasicControlsTab();
-            advancedmainPanel = new AdvancedControlsTab();
-
-            tabControl.TabPages.Add(basicmainPanel);
-            tabControl.TabPages.Add(advancedmainPanel);
-
-            this.Controls.Add(tabControl);
-        }
-
-        private void TabControl_DrawItem(object? sender, DrawItemEventArgs e)
-        {
-            var tabControl = sender as TabControl;
-            var tabPage = tabControl?.TabPages[e.Index];
-
-            bool isSelected = (e.State & DrawItemState.Selected) == DrawItemState.Selected;
-            Color backgroundColor = isSelected
-                ? ColorTranslator.FromHtml("#003300") // aktywna zakładka
-                : ColorTranslator.FromHtml("#006600"); // nieaktywna zakładka
-
-            using (var brush = new SolidBrush(backgroundColor))
+            // 🔁 Layout główny: 2 wiersze
+            var mainLayout = new TableLayoutPanel
             {
-                e.Graphics.FillRectangle(brush, e.Bounds);
-            }
+                Dock = DockStyle.Fill,
+                RowCount = 2,
+                ColumnCount = 1,
+                BackColor = ColorTranslator.FromHtml("#06402B")
+            };
 
-            TextRenderer.DrawText(
-                e.Graphics,
-                tabPage?.Text,
-                tabControl?.Font ?? SystemFonts.DefaultFont,
-                e.Bounds,
-                Color.White,
-                TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter
-            );
+            mainLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 50)); // Górna część – main panel
+            mainLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 50)); // Dolna część – konsola
+
+            // Konsola
+            var consolePanel = new Panel
+            {
+                Dock = DockStyle.Fill,
+                BackColor = Color.Black
+            };
+            consoleUI.Dock = DockStyle.Fill;
+            consolePanel.Controls.Add(consoleUI);
+
+            // Dodajemy do layoutu
+            mainLayout.Controls.Add(mainPanel, 0, 0);
+            mainLayout.Controls.Add(consolePanel, 0, 1);
+
+            this.Controls.Add(mainLayout);
+
+            this.KeyPreview = true;
+            this.KeyPress += (sender, e) =>
+            {
+                var wifiUI = mainPanel?.WiFiUI;
+                var inputBox = consoleUI.InputBox;
+
+                if (!char.IsControl(e.KeyChar) &&
+                    !(wifiUI?.IpAddressField.Focused ?? false) &&
+                    !(wifiUI?.PortNumberField.Focused ?? false))
+                {
+                    bool inputFocused = inputBox?.Focused ?? false;
+                    consoleLogic.HandleGlobalKeyPress(e.KeyChar);
+                    if (!inputFocused)
+                        e.Handled = true;
+                }
+            };
         }
     }
+
 }

@@ -27,6 +27,9 @@ namespace PanTiltApp.WiFi
             this.ui.LoadConfig();
             this.consolePrint += console.PrintMessage;
             this.consoleLogic = console;
+
+            ui.statusLabel.Text = "Status: Idle";
+
             WireEvents();
         }
 
@@ -44,6 +47,7 @@ namespace PanTiltApp.WiFi
         {
             SaveConfig();
             // consolePrint?.Invoke("Connecting via IP...", "blue");
+            ui.statusLabel.Text = "Status: Connecting...";
 
             string ip = ui.IpAddressField.Text;
             int port = int.Parse(ui.PortNumberField.Text);
@@ -59,10 +63,13 @@ namespace PanTiltApp.WiFi
                 ui.ConnectButton.Enabled = false;
                 consolePrint?.Invoke("Connected via IP.", "green");
                 consoleLogic.SetConnectionHandler(connectionHandler);
+                ui.statusLabel.Text = "Status: Connected";
+
             }
             else
             {
                 consolePrint?.Invoke("Failed to connect.", "red");
+                ui.statusLabel.Text = "Status: Failed to connect";
             }
         }
 
@@ -73,6 +80,8 @@ namespace PanTiltApp.WiFi
             ui.DisconnectButton.Enabled = false;
             // ui.SetDisconnectedState();
             consolePrint?.Invoke("Disconnected.", "yellow");
+            ui.statusLabel.Text = "Status: Disconnected";
+
         }
 
         private async Task ConnectSSH()
@@ -85,6 +94,7 @@ namespace PanTiltApp.WiFi
             sshClient.ConsolePrint += (msg, color) => consolePrint?.Invoke(msg, color);
 
             consolePrint?.Invoke("Initializing turret system...", "blue");
+            ui.statusLabel.Text = "Status: connecting via SSH...";
 
             bool connected = await Task.Run(() => sshClient.Connect());
 
@@ -101,6 +111,7 @@ namespace PanTiltApp.WiFi
                     sshClient.StartServer();
                 });
                 consolePrint?.Invoke("Server started.", "green");
+                ui.statusLabel.Text = "Status: SSH connected";
             }
 
             else

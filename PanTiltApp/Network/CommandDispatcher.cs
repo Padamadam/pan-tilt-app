@@ -19,7 +19,7 @@ namespace PanTiltApp.Communication
             ushort pitchVel, ushort yawVel,
             byte cmd = 0x00)
         {
-            // logAction($"Sending command: {cmd:X2} | pitch: pos={pitchPos}, vel={pitchVel} | yaw: pos={yawPos}, vel={yawVel}", "green");
+            logAction($"Sending command: {cmd:X2} | pitch: pos={pitchPos}, vel={pitchVel} | yaw: pos={yawPos}, vel={yawVel}", "green");
             if (!connectionHandler.IsConnected)
             {
                 logAction("Connection not established. Cannot send command.", "red");
