@@ -25,25 +25,25 @@ namespace PanTiltApp.Network
 
 
         /// <summary>
-        /// Łączy się z Raspberry Pi przez SSH
+        /// Connects to Raspberry Pi via SSH
         /// </summary>
         public bool Connect()
         {
             try
             {
                 client.Connect();
-                ConsolePrint?.Invoke("Połączono z głowicą", "green");
+                ConsolePrint?.Invoke("Connected to the turret.", "green");
                 return true;
             }
             catch (Exception ex)
             {
-                ConsolePrint?.Invoke($"Błąd połączenia: {ex.Message}", "red");
+                ConsolePrint?.Invoke($"Connection error: {ex.Message}", "red");
                 return false;
             }
         }
 
         /// <summary>
-        /// Wykonuje podaną komendę na Raspberry Pi
+        /// Executes a given command on Raspberry Pi
         /// </summary>
         public bool ExecuteCommand(string command)
         {
@@ -60,13 +60,13 @@ namespace PanTiltApp.Network
             }
             catch (Exception ex)
             {
-                ConsolePrint?.Invoke($"Błąd podczas wykonywania komendy: {ex.Message}", "red");
+                ConsolePrint?.Invoke($"Error while executing command: {ex.Message}", "red");
                 return false;
             }
         }
 
         /// <summary>
-        /// Uruchamia serwer TCP na Raspberry Pi
+        /// Starts the TCP server on Raspberry Pi
         /// </summary>
         public void StartServer()
         {
@@ -75,21 +75,20 @@ namespace PanTiltApp.Network
 
             try
             {
-                ConsolePrint?.Invoke("Zatrzymywanie starych procesów server.py...", "yellow");
-                ExecuteCommand("sudo pkill -f /home/pan-tilt/Documents/pan-tilt-rpi/server.py");  // zabij stare serwery
-                System.Threading.Thread.Sleep(500);         // daj pół sekundy na ubicie procesu
+                ConsolePrint?.Invoke("Stopping old server.py processes...", "yellow");
+                ExecuteCommand("sudo pkill -f /home/pan-tilt/Documents/pan-tilt-rpi/server.py");  // kill old servers
+                System.Threading.Thread.Sleep(500);  // give half a second to terminate the process
 
-                ConsolePrint?.Invoke("Sprawdzanie urządzeń USB...", "yellow");
-                ExecuteCommand("ls /dev/ttyUSB* || echo 'No USB device found'");  // sprawdź, czy ESP32 jest podłączony
+                ConsolePrint?.Invoke("Checking USB devices...", "yellow");
+                ExecuteCommand("ls /dev/ttyUSB* || echo 'No USB device found'");  // check if ESP32 is connected
 
                 // Start server
-                if(ExecuteCommand("sudo python3 /home/pan-tilt/Documents/pan-tilt-rpi/server.py"))
-                    ConsolePrint?.Invoke("Uruchomiono serwer TCP na Raspberry Pi...", "green");
-
+                if (ExecuteCommand("sudo python3 /home/pan-tilt/Documents/pan-tilt-rpi/server.py"))
+                    ConsolePrint?.Invoke("TCP server started on Raspberry Pi...", "green");
             }
             catch (Exception ex)
             {
-                ConsolePrint?.Invoke($"Błąd podczas uruchamiania serwera: {ex.Message}", "red");
+                ConsolePrint?.Invoke($"Error while starting the server: {ex.Message}", "red");
             }
         }
     }

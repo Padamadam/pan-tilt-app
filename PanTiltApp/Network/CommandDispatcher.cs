@@ -46,7 +46,7 @@ namespace PanTiltApp.Communication
         {
             if (!connectionHandler.IsConnected)
             {
-                logAction("Connection not established. Cannot send laser command.", "red");
+                // logAction("Connection not established. Cannot send laser command.", "red");
                 return;
             }
 

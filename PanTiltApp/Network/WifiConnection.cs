@@ -43,7 +43,7 @@ namespace PanTiltApp.WiFi
         private async Task Connect()
         {
             SaveConfig();
-            consolePrint?.Invoke("Łączenie przez IP...", "blue");
+            // consolePrint?.Invoke("Connecting via IP...", "blue");
 
             string ip = ui.IpAddressField.Text;
             int port = int.Parse(ui.PortNumberField.Text);
@@ -57,12 +57,12 @@ namespace PanTiltApp.WiFi
             if (await connectionHandler.ConnectAsync())
             {
                 ui.ConnectButton.Enabled = false;
-                consolePrint?.Invoke("Połączono przez IP.", "green");
+                consolePrint?.Invoke("Connected via IP.", "green");
                 consoleLogic.SetConnectionHandler(connectionHandler);
             }
             else
             {
-                consolePrint?.Invoke("Nie udało się połączyć.", "red");
+                consolePrint?.Invoke("Failed to connect.", "red");
             }
         }
 
@@ -72,7 +72,7 @@ namespace PanTiltApp.WiFi
             ui.ConnectButton.Enabled = true;
             ui.DisconnectButton.Enabled = false;
             // ui.SetDisconnectedState();
-            consolePrint?.Invoke("Rozłączono.", "yellow");
+            consolePrint?.Invoke("Disconnected.", "yellow");
         }
 
         private async Task ConnectSSH()
@@ -84,7 +84,7 @@ namespace PanTiltApp.WiFi
             sshClient = new RaspberryPiSSHClient(host, username, password);
             sshClient.ConsolePrint += (msg, color) => consolePrint?.Invoke(msg, color);
 
-            consolePrint?.Invoke("Inizjalizacja systemu głowicy...", "blue");
+            consolePrint?.Invoke("Initializing turret system...", "blue");
 
             bool connected = await Task.Run(() => sshClient.Connect());
 
@@ -100,12 +100,12 @@ namespace PanTiltApp.WiFi
                 {
                     sshClient.StartServer();
                 });
-                consolePrint?.Invoke("Uruchomiono serwer", "green");
+                consolePrint?.Invoke("Server started.", "green");
             }
 
             else
             {
-                consolePrint?.Invoke("Nie udało się zainicjalizować systemu.", "red");
+                consolePrint?.Invoke("Failed to initialize the system.", "red");
             }
         }
 
@@ -123,7 +123,7 @@ namespace PanTiltApp.WiFi
             }
             catch (Exception ex)
             {
-                consolePrint?.Invoke($"Błąd zapisu do config.ini: {ex.Message}", "red");
+                consolePrint?.Invoke($"Error saving to config.ini: {ex.Message}", "red");
             }
         }
     }

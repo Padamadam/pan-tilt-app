@@ -44,17 +44,17 @@ namespace PanTiltApp.Camera
             string? cameraIp = ipSourceTextBox?.Text;
             if (string.IsNullOrWhiteSpace(cameraIp))
             {
-                console.PrintMessage("Adres IP kamery jest pusty - pomijam uruchamianie strumienia.", "yellow");
+                console.PrintMessage("The camera IP address is empty - skipping stream startup.", "yellow");
                 return;
             }
 
             if (sshClient == null || !sshClient.IsConnected)
             {
-                console.PrintMessage("Brak połączenia SSH z Raspberry Pi. Nie można uruchomić strumienia.", "red");
+                console.PrintMessage("No SSH connection to Raspberry Pi. Cannot start the stream.", "red");
                 return;
             }
 
-            console.PrintMessage("Uruchamianie serwera MJPEG na Raspberry Pi...", "yellow");
+            console.PrintMessage("Starting MJPEG server on Raspberry Pi...", "yellow");
 
             sshClient.ExecuteCommand("sudo pkill -f mjpeg_server.py");
 
@@ -62,34 +62,68 @@ namespace PanTiltApp.Camera
 
             if (success)
             {
-                console.PrintMessage("Serwer MJPEG uruchomiony. Inicjalizuję strumień...", "green");
+                console.PrintMessage("MJPEG server started. Initializing stream...", "green");
                 InitializeStream();
             }
             else
             {
-                console.PrintMessage("Nie udało się uruchomić serwera MJPEG.", "red");
+                console.PrintMessage("Failed to start MJPEG server.", "red");
             }
         }
+
+        public void StartSlowStream()
+        {
+            string? cameraIp = ipSourceTextBox?.Text;
+            if (string.IsNullOrWhiteSpace(cameraIp))
+            {
+                console.PrintMessage("The camera IP address is empty - skipping stream startup.", "yellow");
+                return;
+            }
+
+            if (sshClient == null || !sshClient.IsConnected)
+            {
+                console.PrintMessage("No SSH connection to Raspberry Pi. Cannot start the stream.", "red");
+                return;
+            }
+
+            console.PrintMessage("Starting MJPEG server (slow mode) on Raspberry Pi...", "yellow");
+
+            sshClient.ExecuteCommand("sudo pkill -f mjpeg_server.py");
+            sshClient.ExecuteCommand("sudo pkill -f mjpeg_server_slow.py");
+
+            bool success = sshClient.ExecuteCommand("nohup python3 /home/pan-tilt/Documents/pan-tilt-rpi/mjpeg_server_slow.py > /dev/null 2>&1 &");
+
+            if (success)
+            {
+                console.PrintMessage("MJPEG server (slow) started. Initializing stream...", "green");
+                InitializeStream();
+            }
+            else
+            {
+                console.PrintMessage("Failed to start MJPEG server (slow).", "red");
+            }
+        }
+
 
         public void StopStream()
         {
             if (sshClient == null || !sshClient.IsConnected)
             {
-                console.PrintMessage("Brak połączenia SSH z Raspberry Pi. Nie można zatrzymać strumienia.", "red");
+                console.PrintMessage("No SSH connection to Raspberry Pi. Cannot stop the stream.", "red");
                 return;
             }
 
-            console.PrintMessage("Zatrzymywanie serwera MJPEG...", "yellow");
+            console.PrintMessage("Stopping MJPEG server...", "yellow");
 
             bool success = sshClient.ExecuteCommand("sudo pkill -f mjpeg_server.py");
 
             if (success)
             {
-                console.PrintMessage("Zatrzymano serwer MJPEG na Raspberry Pi.", "green");
+                console.PrintMessage("MJPEG server on Raspberry Pi stopped.", "green");
             }
             else
             {
-                console.PrintMessage("Nie udało się zatrzymać serwera MJPEG.", "red");
+                console.PrintMessage("Failed to stop MJPEG server.", "red");
             }
         }
 
@@ -97,7 +131,6 @@ namespace PanTiltApp.Camera
         {
             if (videoBox == null || string.IsNullOrWhiteSpace(cameraIp))
             {
-                console.PrintMessage("Brak danych wejściowych do uruchomienia strumienia.", "red");
                 return;
             }
 
@@ -124,24 +157,24 @@ namespace PanTiltApp.Camera
                 }
                 catch (Exception ex)
                 {
-                    console.PrintMessage($"Błąd dekodowania MJPEG: {ex.Message}", "red");
+                    console.PrintMessage($"MJPEG decoding error: {ex.Message}", "red");
                 }
             };
 
             decoder.Error += (s, e) =>
             {
-                console.PrintMessage($"Błąd połączenia ze strumieniem MJPEG: {e.Message}", "red");
+                console.PrintMessage($"MJPEG stream connection error: {e.Message}", "red");
             };
 
             try
             {
                 string url = $"http://{cameraIp}:8080/stream.mjpeg";
-                console.PrintMessage($"Łączenie z kamerą pod adresem: {url}", "blue");
+                console.PrintMessage($"Connecting to the camera at: {url}", "blue");
                 decoder.ParseStream(new Uri(url));
             }
             catch (Exception ex)
             {
-                console.PrintMessage($"Błąd połączenia z kamerą: {ex.Message}", "red");
+                console.PrintMessage($"Camera connection error: {ex.Message}", "red");
             }
 
             refreshTimer = new System.Windows.Forms.Timer();

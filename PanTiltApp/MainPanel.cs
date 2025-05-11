@@ -18,9 +18,6 @@ namespace PanTiltApp
         private readonly AppConsoleLogic console;
         private readonly AppConsoleUI consoleUI;
         public WiFiConnection? wifiLogic;
-        // private RaspberryPiSSHClient? sshClient;
-        // private IPConnectionHandler? connectionHandler;
-        // private AppConsole? console;
         public WiFiConnectionUI? WiFiUI => wifiLogic?.UIInternal;
         private CameraUI? cameraUI;
         private CameraLogic? cameraLogic;
@@ -80,7 +77,7 @@ namespace PanTiltApp
             wifiLogic = new WiFiConnection(console);
 
             cameraLogic = new CameraLogic(console);
-            var ip = wifiLogic?.UIInternal?.IpAddressField.Text ?? "127.0.0.1";
+            var ip = wifiLogic?.UIInternal?.IpAddressField.Text ?? "192.168.128.88";
             cameraLogic = new CameraLogic(console);
             cameraUI = new CameraUI(ip);
             cameraUI.InitializeLogic(cameraLogic, wifiLogic.UIInternal.IpAddressField);

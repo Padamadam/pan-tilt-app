@@ -81,11 +81,8 @@ namespace PanTiltApp.AppConsole
                         cmd
                     );
 
-                    return $"[CMD] move → pitch: pos={pitchPos}, speed={pitchSpeed} | yaw: pos={yawPos}, speed={yawSpeed}";
-                }
-                else
-                {
-                    return "Usage: pitch|yaw [POSITION] [SPEED]";
+                    // return $"[CMD] move → pitch: pos={pitchPos}, speed={pitchSpeed} | yaw: pos={yawPos}, speed={yawSpeed}";
+                    return "";
                 }
             }
             else if (command.ToLower() == "laser on")
@@ -99,25 +96,23 @@ namespace PanTiltApp.AppConsole
                 return "Laser turned OFF (binary frame)";
             }
 
-
-            // // Gdy połączono – prześlij jako tekst
-            // if (connectionHandler != null && connectionHandler.IsConnected)
-            // {
-            //     return connectionHandler.Send(command);
-            // }
-
             // Pozostałe lokalne komendy
             switch (command.ToLower())
             {
                 case "help":
-                    return "Available commands: help, status, clear, pitch [pos] [speed], yaw [pos] [speed]";
-                case "status":
-                    return "System status: All systems operational.";
+                    return
+                        "Available commands:\n" +
+                        "  help                                             - Show this help message\n" +
+                        "  clear                                            - Clear console output\n" +
+                        "  move [p_pos] [y_pos] [p_speed] [y_speed]         - Move both servos to positions with speeds\n" +
+                        "     Example: move 100 300 -500 100\n" +
+                        "  laser on                                         - Turn on laser pointer\n" +
+                        "  laser off                                        - Turn off laser pointer\n";
                 case "clear":
                     ui.MessageDisplay.Clear();
                     return "";
                 default:
-                    return $"'{command}' is not recognized as a valid command.";
+                    return $"'{command}' is not recognized as a valid command. Use help for a list of commands.";
             }
         }
 

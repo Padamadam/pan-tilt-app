@@ -141,12 +141,12 @@ namespace PanTiltApp.Network
                 _isReceiving = false;
                 _networkStream?.Close();
                 _client?.Close();
-                ConsolePrint?.Invoke("Rozłączono połączenie IP z Raspberry Pi.", "yellow");
+                ConsolePrint?.Invoke("Disconnected IP connection to Raspberry Pi.", "yellow");
             }
             catch
             {
-                // NIE pokazujemy błędu jeśli połączenie i tak już nie istniało.
-                // Można dodać log do pliku, jeśli chcesz mieć monitoring w tle.
+                // Do not show an error if the connection already does not exist.
+                // You can add logging to a file if you want background monitoring.
             }
             finally
             {
@@ -158,15 +158,15 @@ namespace PanTiltApp.Network
         public void Send(byte[] data)
         {
             if (!IsConnected || _networkStream == null)
-                ConsolePrint?.Invoke("Brak połączenia z serwerem.", "red");
+                ConsolePrint?.Invoke("No connection to the server.", "red");
             try
             {
                 _networkStream.Write(data, 0, data.Length);
-                // ConsolePrint?.Invoke($"Wysłano ramkę binarną: {BitConverter.ToString(data)}", "green");
+                // ConsolePrint?.Invoke($"Sent binary frame: {BitConverter.ToString(data)}", "green");
             }
             catch (Exception ex)
             {
-                ConsolePrint?.Invoke($"Błąd wysyłania ramki binarnej: {ex.Message}", "red");
+                ConsolePrint?.Invoke($"Error sending binary frame: {ex.Message}", "red");
             }
         }
     }

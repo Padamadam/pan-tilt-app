@@ -101,14 +101,14 @@ namespace PanTiltApp.Operate
             // Rysuj bazę (kółko bazowe)
             // g.FillEllipse(Brushes.Black, 0, 0, joystickBase.Width, joystickBase.Height);
             int size = Math.Min(joystickBase.Width, joystickBase.Height);
-            g.FillEllipse(Brushes.DimGray,
+            g.FillEllipse(Brushes.Gray,
                 (joystickBase.Width - size) / 2,
                 (joystickBase.Height - size) / 2,
                 size,
                 size);            
 
             // Rysuj uchwyt joysticka (wewnętrzne kółko)
-            g.FillEllipse(Brushes.DarkGray,
+            g.FillEllipse(Brushes.Black,
                 joystickKnob.X - knobSize / 2,
                 joystickKnob.Y - knobSize / 2,
                 knobSize,

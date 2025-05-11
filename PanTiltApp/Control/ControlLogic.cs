@@ -1,9 +1,5 @@
 using PanTiltApp.AppConsole;
 
-
-// TODO sterowanie predkosciami a nie polozeniami
-// TODO zmiana struktury ramek - rownolegle info o obu serwach!!!!
-
 namespace PanTiltApp.Operate
 {
     public class ControlLogic
@@ -37,22 +33,6 @@ namespace PanTiltApp.Operate
         private void OnJoystickMoved(object? sender, (float x, float y) movement)
         {
             lastJoystickPosition = movement;
-
-            // bool isCentered = Math.Abs(movement.x) < tolerance && Math.Abs(movement.y) < tolerance;
-
-            // if (!isCentered)
-            // {
-            //     // Joystick wychylenie - startujemy timer jeśli nie działa
-            //     if (commandLoopTimer == null)
-            //     {
-            //         commandLoopTimer = new System.Threading.Timer(SendCommandFromJoystick, null, 0, intervalMs);
-            //     }
-            // }
-            // else
-            // {
-            //     // Joystick wyśrodkowany - zatrzymujemy dopiero po 3 STOP-ramkach
-            //     zeroFramesRemaining = 3;
-            // }
         }
 
         private void OnSwitchToggled(object? sender, bool isEnabled)
@@ -78,19 +58,8 @@ namespace PanTiltApp.Operate
 
                 if (isCentered)
                 {
-                    // if (zeroFramesRemaining > 0)
-                    // {
                         console.dispatcher?.SendDualServoFullFrame(0, 0, 1, 1, 0x00);
                         return;
-                        // zeroFramesRemaining--;
-
-                    //     if (zeroFramesRemaining == 0)
-                    //     {
-                    //         commandLoopTimer?.Change(Timeout.Infinite, Timeout.Infinite);
-                    //         commandLoopTimer = null;
-                    //     }
-                    // }
-                    // return;
                 }
                 // Jeśli joystick wychylony — wysyłamy komendę z aktualną prędkością
                 int minPitchSpeed = 1;
